@@ -1,5 +1,14 @@
+// packages
 import React from 'react';
-import { BrowserRouter, Route, Switch, Link, } from 'react-router-dom';
+import {
+  BrowserRouter,
+  Route,
+  Switch,
+  Link,
+} from 'react-router-dom';
+
+// css styles
+import styles from '../assets/styles'
 
 // imported components
 import Draft from './Draft';
@@ -15,26 +24,6 @@ class Page extends React.Component {
       </div>
     );
   }
-  // render() {
-  //   return (
-  //     <BrowserRouter>
-  //       <div>
-  //
-  //         <Route path={'/:anything'} render={ () => <Link to={'/'}>Back to Home</Link> }/>
-  //         <Route path={'/:anything'} render={ () => <Link to={'/test1'}>Test1</Link> }/>
-  //         <Route path={'/:anything'} render={ () => <Link to={'/test2'}>Test2</Link> }/>
-  //
-  //         <Switch>
-  //           <Route path={'/'} exact={true} component={Draft}/>
-  //           <Route path={'/test1'} component={Test1}/>
-  //           <Route path={'/test2'} component={Test2}/>
-  //           <Route render={() => <h1>404</h1>} />
-  //         </Switch>
-  //
-  //       </div>
-  //     </BrowserRouter>
-  //   );
-  // }
 };
 
 export default Page;

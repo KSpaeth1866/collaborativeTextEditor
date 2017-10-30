@@ -22,6 +22,15 @@ const styles = {
     marginTop: 10,
     textAlign: 'center',
   },
+  styleButton: {
+    color: '#999',
+    marginRight: 16,
+    padding: 2,
+    display: 'inline-block',
+  },
+  activeButton: {
+    color: '#5890ff',
+  },
 };
 
 export default styles;
