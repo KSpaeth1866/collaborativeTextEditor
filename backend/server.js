@@ -1,47 +1,22 @@
+//APP and Server setup with socket.io
 const express = require('express');
 const app = express();
-var bodyParser = require('body-parser');
+const server = require('http').createServer(app);
+const io = require('socket.io')(server);
+//Draft js object to setup EditorState
 const {EditorState} = require('draft-js');
-var passport = require('passport'),
-  LocalStrategy = require('passport-local').Strategy;
-
+//MODELS
 const User = require('./models/models').User;
 const Document = require('./models/models').Document;
-
+//PASSPORT
+const passport = require('./auth');
+app.use(passport.initialize());
+//BODYPARSER
+const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 
-passport.use(new LocalStrategy(function(username, password, done) {
-  User.findOne({
-    username: username
-  }, function(err, user) {
-    if (err) {
-      return done(err);
-    }
-    if (!user) {
-      return done(null, false, {message: 'Incorrect username.'});
-    }
-    if (user.password !== password) {
-      return done(null, false, {message: 'Incorrect password.'});
-    }
-    return done(null, user);
-  });
-}));
-passport.serializeUser(function(user, done) {
-  done(null, user.id);
-});
-
-passport.deserializeUser(function(id, done) {
-  User.findOne({
-    _id: id
-  }, function(err, user) {
-    done(err, user);
-  });
-});
-
-app.use(passport.initialize());
-
-//TEST ROUTE
+//ROUTES
 app.get('/', function(req, res) {
   res.send('Hello World!')
 })
@@ -52,7 +27,7 @@ app.post('/login', passport.authenticate('local'), function(req, res) {
 
 app.post('/register', function(req, res) {
   const newUser = new User({username: req.body.username, password: req.body.password});
-  newUser.save( err => {
+  newUser.save(err => {
     if (err) {
       res.json({success: false, message: err})
     } else {
@@ -61,7 +36,15 @@ app.post('/register', function(req, res) {
   })
 });
 
-app.get('/editor/:docId', function(req, res) {
+// app.use(function(req,res,next){
+//   if (!req.user) {
+//     res.send({success:false, message: "Not logged in!"})
+//   } else {
+//     next()
+//   }
+// })
+
+app.get('/document/:docId', function(req, res) {
   Document.findById({_id: req.params.docId}).exec((err, doc) => {
     if (err) {
       res.json({success: false, message: err})
@@ -71,17 +54,14 @@ app.get('/editor/:docId', function(req, res) {
   })
 });
 
-app.post('/editor/:docId', function(req, res) {
+app.post('/document/new', function(req, res) {
   const newDoc = new Document({
     editorState: EditorState.createEmpty(),
-    owner: req.user._id,
-    collaborators: [
-      {
-        userId: req.user._id
-      }
-    ],
-    name: req.body.name
+    owner: req.body.user._id,
+    collaborators: [],
+    name: req.body.name,
   });
+  newDoc.collaborators.push(req.body.user._id);
   newDoc.save(err => {
     if (err) {
       res.json({success: false, message: err})
@@ -91,12 +71,10 @@ app.post('/editor/:docId', function(req, res) {
   })
 });
 
-app.post('/editor/save/:docId', function(req, res) {
+app.post('/document/save/:docId', function(req, res) {
   Document.findByIdAndUpdate({
     _id: req.params.docId
-  }, {
-    editorState: req.body.editorState
-  })
+  }, {editorState: req.body.editorState})
 });
 
 app.get('/logout', function(req, res) {
@@ -104,7 +82,14 @@ app.get('/logout', function(req, res) {
   res.redirect('/');
 });
 
+io.on('connection', function(socket) {
+  socket.emit('news', {hello: 'world'});
+  socket.on('my other event', function(data) {
+    console.log(data);
+  });
+});
+
 var port = process.env.PORT || 3000
-app.listen(port, function() {
+server.listen(port, function() {
   console.log('Backend server for Electron App running on port 3000!')
 })
