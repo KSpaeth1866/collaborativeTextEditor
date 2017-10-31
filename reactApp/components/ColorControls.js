@@ -23,10 +23,12 @@ class ColorControls extends React.Component {
     this.currentStyle = this.props.editorState.getCurrentInlineStyle();
   }
   render() {
+    this.currentStyle = this.props.editorState.getCurrentInlineStyle();
     return (
       <div style={styles.controls}>
         {COLORS.map(type =>
           <StyleButton
+            key={type.label}
             active={this.currentStyle.has(type.style)}
             label={type.label}
             onToggle={(style) => this.props.onToggle(style)}

@@ -1,11 +1,15 @@
 // packages
 import React from 'react';
+import { connect } from 'react-redux';
 import {
   Editor,
   EditorState,
   RichUtils,
   Modifier,
+  DefaultDraftBlockRenderMap,
 } from 'draft-js';
+import { Map } from 'immutable';
+import Paper from 'material-ui/Paper';
 
 // css styles
 import styles from '../assets/styles'
@@ -23,8 +27,18 @@ class Draft extends React.Component {
     this.state = {
       editorState: EditorState.createEmpty()
     };
-    this.logState = () => console.log(this.state.editorState.toJS());
-    this.focus = () => this.editor.focus();
+    const blockRenderMap = Map({
+      'right': {
+        element: 'div'
+      },
+      'center': {
+        element: 'div'
+      },
+      'left': {
+        element: 'div'
+      }
+    });
+    this.extendedBlockRenderMap = DefaultDraftBlockRenderMap.merge(blockRenderMap);
   }
 
   // _handleKeyCommand(command, editorState) {
@@ -36,6 +50,10 @@ class Draft extends React.Component {
   //   return false;
   // }
 
+  focus() {
+    this.editor.focus();
+  }
+
   onChange(editorState) {
     this.setState({
       editorState,
@@ -45,7 +63,10 @@ class Draft extends React.Component {
   _onTab(e) {
     e.preventDefault;
     const maxDepth = 4;
-    this.onChange(RichUtils.onTab(e, this.state.editorState, maxDepth));
+    this.onChange(
+      RichUtils.onTab(
+        this.state.editorState,
+        maxDepth));
   }
 
   _toggleBlockType(blockType) {
@@ -91,48 +112,74 @@ class Draft extends React.Component {
     this.onChange(nextEditorState);
   }
 
+  myBlockStyleFn(contentBlock) {
+    const type = contentBlock.getType();
+    switch (type) {
+      case 'right':
+          return 'right';
+      case 'center':
+          return 'center';
+      case 'left':
+          return 'left';
+    }
+  }
+
   render() {
     return (
       <div className={'RichEditor-root'}>
-        <p
-          style={styles.header}>
+        <Paper
+          style={styles.header}
+          zDepth={2}
+        >
           Draft
-        </p>
-        <BlockStyleControls
-          editorState={this.state.editorState}
-          onToggle={(style) => this._toggleBlockType(style)}
-        />
-        <InlineStyleControls
-          editorState={this.state.editorState}
-          onToggle={(style) => this._toggleInlineStyle(style)}
-        />
-        <ColorControls
-          editorState={this.state.editorState}
-          onToggle={(style) => this._toggleColor(style)}
-        />
-        <div className={'container'}>
-          <div
-            style={styles.editor}
-            onClick={this.focus}>
-            <Editor
-              editorState={this.state.editorState}
-              customStyleMap={colorStyleMap}
-              onChange={(state) => this.onChange(state)}
-              onTab={(e) => this._onTab(e)}
-              // handleKeyCommand={() => this._handleKeyCommand()}
-              ref={(ref) => this.editor = ref}
-            />
-          </div>
-          <input
-            onClick={this.logState}
-            style={styles.button}
-            type="button"
-            value="Log State"
+        </Paper>
+        <Paper
+          style={styles.controlContainer}
+          zDepth={2}
+          >
+          <BlockStyleControls
+            editorState={this.state.editorState}
+            onToggle={(style) => this._toggleBlockType(style)}
           />
-          </div>
-        </div>
+          <InlineStyleControls
+            editorState={this.state.editorState}
+            onToggle={(style) => this._toggleInlineStyle(style)}
+          />
+          <ColorControls
+            editorState={this.state.editorState}
+            onToggle={(style) => this._toggleColor(style)}
+          />
+        </Paper>
+        <Paper
+          style={styles.editor}
+          zDepth={2}
+          onClick={() => this.focus()}>
+          <Editor
+            editorState={this.state.editorState}
+            customStyleMap={colorStyleMap}
+            blockStyleFn={this.myBlockStyleFn}
+            blockRenderMap={this.extendedBlockRenderMap}
+            onChange={(state) => this.onChange(state)}
+            onTab={(e) => this._onTab(e)}
+            // handleKeyCommand={() => this._handleKeyCommand()}
+            ref={(ref) => this.editor = ref}
+          />
+        </Paper>
+      </div>
       );
     }
   };
 
-  export default Draft;
+  const mapStateToProps = (state) => {
+    return {
+      editorState: state.editorState,
+    };
+  };
+
+  const mapDispatchToProps = (dispatch) => {
+    return {
+      // onCloseModal: (day, time) => dispatch(closeModal(day, time)),
+    };
+  };
+
+  export default connect(mapStateToProps, mapDispatchToProps)(Draft);

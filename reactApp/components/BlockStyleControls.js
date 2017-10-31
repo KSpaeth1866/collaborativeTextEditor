@@ -18,6 +18,9 @@ const BLOCK_TYPES = [
   {label: 'UL', style: 'unordered-list-item'},
   {label: 'OL', style: 'ordered-list-item'},
   {label: 'Code Block', style: 'code-block'},
+  {label: 'Align Right', style: 'right'},
+  {label: 'Align Center', style: 'center'},
+  {label: 'Align Left', style: 'left'},
 ];
 
 class BlockStyleControls extends React.Component{
@@ -32,6 +35,10 @@ class BlockStyleControls extends React.Component{
   }
 
   render() {
+    this.blockType = this.props.editorState
+    .getCurrentContent()
+    .getBlockForKey(this.selection.getStartKey())
+    .getType();
     return (
       <div className="RichEditor-controls">
         {BLOCK_TYPES.map((type) =>

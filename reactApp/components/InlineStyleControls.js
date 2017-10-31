@@ -20,7 +20,9 @@ class InlineStyleControls extends React.Component {
     super(props)
     this.currentStyle = this.props.editorState.getCurrentInlineStyle();
   }
+
   render() {
+    this.currentStyle = this.props.editorState.getCurrentInlineStyle();
     return (
       <div className="RichEditor-controls">
         {INLINE_STYLES.map(type =>
