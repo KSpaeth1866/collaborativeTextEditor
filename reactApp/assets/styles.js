@@ -1,36 +1,25 @@
 const styles = {
-  root: {
-    fontFamily: '\'Helvetica\', sans-serif',
-    padding: 20,
-    width: 600,
-  },
   editor: {
     fontFamily: '\'Helvetica\', sans-serif',
     cursor: 'text',
-    minHeight: 80,
+    minHeight: 200,
     padding: 10,
-    boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)'
+    margin: 15,
   },
   header: {
     textAlign: 'center',
     fontSize: 30,
-    padding: 5,
+    padding: 10,
+    margin: 15,
     fontFamily: '\'Helvetica\', sans-serif',
-    boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)'
-  },
-  button: {
-    marginTop: 10,
-    textAlign: 'center',
   },
   styleButton: {
-    color: '#999',
-    marginRight: 16,
-    padding: 2,
-    display: 'inline-block',
+    margin: 2,
   },
-  activeButton: {
-    color: '#5890ff',
-  },
+  controlContainer: {
+    padding: 10,
+    margin: 15,
+  }
 };
 
 export default styles;
