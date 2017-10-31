@@ -13,6 +13,14 @@ import styles from '../assets/styles'
 class Login extends React.Component {
   constructor(props) {
     super(props);
+    this.state = {
+      username: '',
+      password: '',
+    }
+  }
+
+  onClickLogin(e) {
+    console.log(this.state);
   }
 
   render() {
@@ -21,32 +29,36 @@ class Login extends React.Component {
         zDepth={2}
         style={styles.container}
         >
-        <div
-          style={styles.authHeader}>
-          Sign in
-        </div>
-        <div
-          style={styles.authSubHeader}>
-          to continue to Docs
-        </div>
-        <TextField
-          floatingLabelText="Username"
-          fullWidth={true}
-        />
-        <TextField
-          floatingLabelText="Password"
-          type="password"
-          fullWidth={true}
-        />
-        <br />
-        <br />
-        <RaisedButton
-          style={styles.styleButton}
-          primary={true}
-          // onClick={() => this.props.onLogout()}
-          label={'Login'}
-          fullWidth={true}
-        />
+        <form>
+          <div
+            style={styles.authHeader}>
+            Sign in
+          </div>
+          <div
+            style={styles.authSubHeader}>
+            to continue to Docs
+          </div>
+          <TextField
+            floatingLabelText="Username"
+            fullWidth={true}
+            onChange={(e) => this.setState({username: e.target.value})}
+          />
+          <TextField
+            floatingLabelText="Password"
+            type="password"
+            fullWidth={true}
+            onChange={(e) => this.setState({password: e.target.value})}
+          />
+          <br />
+          <br />
+          <RaisedButton
+            style={styles.styleButton}
+            primary={true}
+            onClick={(e) => this.onClickLogin(e)}
+            label={'Login'}
+            fullWidth={true}
+          />
+        </form>
         <br />
         <br />
         <br />

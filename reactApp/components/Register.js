@@ -13,6 +13,19 @@ import styles from '../assets/styles'
 class Register extends React.Component {
   constructor(props) {
     super(props);
+    this.state = {
+      username: '',
+      password: '',
+      confirmPassword: '',
+    }
+  }
+
+  onClickRegister() {
+    if (this.state.password !== this.state.confirmPassword) {
+      alert('passwords must match')
+      return
+    }
+    console.log('nice👌🏻');
   }
 
   render() {
@@ -25,33 +38,40 @@ class Register extends React.Component {
           style={styles.authHeader}>
           Create an account
         </div>
+        <div
+          style={styles.authSubHeader}>
+          to being using Docs
+        </div>
         <TextField
           floatingLabelText="Username"
           fullWidth={true}
+          onChange={(e) => this.setState({username: e.target.value})}
         />
         <TextField
           floatingLabelText="Password"
           type="password"
           fullWidth={true}
+          onChange={(e) => this.setState({password: e.target.value})}
         />
         <TextField
           floatingLabelText="Confirm Password"
           type="password"
           fullWidth={true}
+          onChange={(e) => this.setState({confirmPassword: e.target.value})}
         />
         <br />
         <br />
         <RaisedButton
           style={styles.styleButton}
           primary={true}
-          // onClick={() => this.props.onLogout()}
+          onClick={() => this.onClickRegister()}
           label={'Register'}
           fullWidth={true}
         />
         <br />
         <br />
         <br />
-        <Link to={'/login'}>
+        <Link to={'/'}>
           <RaisedButton
             style={styles.styleButton}
             primary={true}
