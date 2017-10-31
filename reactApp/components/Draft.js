@@ -20,13 +20,19 @@ import BlockStyleControls from './BlockStyleControls';
 import InlineStyleControls from './InlineStyleControls';
 import ColorControls from './ColorControls';
 
+// dispatch actions
+import {
+  typing,
+} from '../actions/index';
+
+
 // class component
 class Draft extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      editorState: EditorState.createEmpty()
-    };
+    // this.state = {
+    //   editorState: EditorState.createEmpty()
+    // };
     const blockRenderMap = Map({
       'right': {
         element: 'div'
@@ -54,41 +60,41 @@ class Draft extends React.Component {
     this.editor.focus();
   }
 
-  onChange(editorState) {
-    this.setState({
-      editorState,
-    })
-  }
+  // onChange(editorState) {
+  //   this.setState({
+  //     editorState,
+  //   })
+  // }
 
   _onTab(e) {
     e.preventDefault;
     const maxDepth = 4;
-    this.onChange(
+    this.props.onChange(
       RichUtils.onTab(
-        this.state.editorState,
+        this.props.editorState,
         maxDepth));
   }
 
   _toggleBlockType(blockType) {
-    this.onChange(
+    this.props.onChange(
       RichUtils.toggleBlockType(
-        this.state.editorState,
+        this.props.editorState,
         blockType
       )
     );
   }
 
   _toggleInlineStyle(inlineStyle) {
-    this.onChange(
+    this.props.onChange(
       RichUtils.toggleInlineStyle(
-        this.state.editorState,
+        this.props.editorState,
         inlineStyle
       )
     );
   }
 
   _toggleColor(toggledColor) {
-    const {editorState} = this.state;
+    const {editorState} = this.props;
     const selection = editorState.getSelection();
     // Let's just allow one color at a time. Turn off all active colors.
     const nextContentState = Object.keys(colorStyleMap)
@@ -109,7 +115,7 @@ class Draft extends React.Component {
         toggledColor
       );
     }
-    this.onChange(nextEditorState);
+    this.props.onChange(nextEditorState);
   }
 
   myBlockStyleFn(contentBlock) {
@@ -138,28 +144,29 @@ class Draft extends React.Component {
           zDepth={2}
           >
           <BlockStyleControls
-            editorState={this.state.editorState}
+            editorState={this.props.editorState}
             onToggle={(style) => this._toggleBlockType(style)}
           />
           <InlineStyleControls
-            editorState={this.state.editorState}
+            editorState={this.props.editorState}
             onToggle={(style) => this._toggleInlineStyle(style)}
           />
           <ColorControls
-            editorState={this.state.editorState}
+            editorState={this.props.editorState}
             onToggle={(style) => this._toggleColor(style)}
           />
         </Paper>
         <Paper
           style={styles.editor}
           zDepth={2}
-          onClick={() => this.focus()}>
+          onClick={() => this.focus()}
+          >
           <Editor
-            editorState={this.state.editorState}
+            editorState={this.props.editorState}
             customStyleMap={colorStyleMap}
             blockStyleFn={this.myBlockStyleFn}
             blockRenderMap={this.extendedBlockRenderMap}
-            onChange={(state) => this.onChange(state)}
+            onChange={(state) => this.props.onChange(state)}
             onTab={(e) => this._onTab(e)}
             // handleKeyCommand={() => this._handleKeyCommand()}
             ref={(ref) => this.editor = ref}
@@ -178,7 +185,7 @@ class Draft extends React.Component {
 
   const mapDispatchToProps = (dispatch) => {
     return {
-      // onCloseModal: (day, time) => dispatch(closeModal(day, time)),
+      onChange: (state) => dispatch(typing(state)),
     };
   };
 
