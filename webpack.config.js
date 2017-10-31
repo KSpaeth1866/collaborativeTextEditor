@@ -20,6 +20,11 @@ module.exports = {
       }
     ]
   },
+  plugins: [
+    new webpack.DefinePlugin({
+      'SERVER_URL': JSON.stringify(process.env.SERVER_URL)
+    })
+  ],
   stats: {
     colors: true
   },

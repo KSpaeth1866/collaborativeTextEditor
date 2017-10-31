@@ -14,8 +14,7 @@ import styles from '../assets/styles'
 
 // imported components
 import Draft from './Draft';
-import Test1 from './Test1';
-import Test2 from './Test2';
+import DocsList from './DocsList';
 import Login from './Login';
 import Register from './Register';
 
@@ -33,11 +32,11 @@ class Page extends React.Component {
         {
           this.props.loggedIn
           ?
-          <Draft />
+          <DocsList />
           :
           <HashRouter>
             <Switch>
-              <Route path='/login' component={Login} />
+              <Route exact path='/' component={Login} />
               <Route path='/register' component={Register} />
             </Switch>
           </HashRouter>
