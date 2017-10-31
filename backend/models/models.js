@@ -1,11 +1,9 @@
 var mongoose = require('mongoose');
-var connect = process.env.MONGODB_URI || require('./connect');
-mongoose.connect(connect);
+mongoose.connect(process.env.MONGODB_URI);
 
 var userSchema = mongoose.Schema({
   username: {
     type: String,
-    required: true,
     unique: true
   },
   password: {
@@ -13,7 +11,8 @@ var userSchema = mongoose.Schema({
     required: true
   },
   docsList: [{
-    docId: mongoose.Schema.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Document'
       }]
 });
 
@@ -23,16 +22,18 @@ var docsSchema = mongoose.Schema({
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
   },
   collaborators: [{
-    userId: mongoose.Schema.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
   }],
   name: {
     type: String,
     unique: true
   },
 });
-// 
+//
 // docsSchema.methods.addCollaborator = function (cb){
 //   this.
 //     Follow.find({following: this._id}).populate('follower').exec(function(err, peopleWhoFollowYou){
