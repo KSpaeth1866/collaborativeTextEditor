@@ -1,14 +1,21 @@
 // packages
 import React from 'react';
+import { connect } from 'react-redux';
 import RaisedButton from 'material-ui/RaisedButton';
 import TextField from 'material-ui/TextField'
 import Paper from 'material-ui/Paper';
 import {
   Link,
 } from 'react-router-dom';
+import axios from 'axios';
 
 // css styles
 import styles from '../assets/styles'
+
+// dispatch actions
+import {
+  login,
+} from '../actions/index';
 
 class Login extends React.Component {
   constructor(props) {
@@ -19,8 +26,19 @@ class Login extends React.Component {
     }
   }
 
-  onClickLogin(e) {
-    console.log(this.state);
+  async onClickLogin() {
+    try {
+      let login = await axios.post(SERVER_URL + '/login', {
+        username: this.state.username,
+        password: this.state.password,
+      })
+      if (login.data.success) {
+        this.props.onLogin();
+      }
+    }
+    catch(e) {
+      console.log(e);
+    }
   }
 
   render() {
@@ -75,4 +93,10 @@ class Login extends React.Component {
   }
 }
 
-export default Login;
+const mapDispatchToProps = (dispatch) => {
+  return {
+    onLogin: () => dispatch(login()),
+  };
+};
+
+export default connect(null, mapDispatchToProps)(Login);

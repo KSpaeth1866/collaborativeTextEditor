@@ -1,15 +1,23 @@
 // packages
 import React from 'react';
+import { connect } from 'react-redux';
 import RaisedButton from 'material-ui/RaisedButton';
 import TextField from 'material-ui/TextField'
 import Paper from 'material-ui/Paper';
 import {
   Link,
 } from 'react-router-dom';
+import axios from 'axios';
 
 // css styles
 import styles from '../assets/styles'
 
+// dispatch actions
+import {
+  login,
+} from '../actions/index';
+
+// class component
 class Register extends React.Component {
   constructor(props) {
     super(props);
@@ -20,12 +28,31 @@ class Register extends React.Component {
     }
   }
 
-  onClickRegister() {
-    if (this.state.password !== this.state.confirmPassword) {
-      alert('passwords must match')
+  async onClickRegister() {
+    if (this.state.password !== this.state.confirmPassword || this.state.password.length === 0) {
+      alert('passwords must match and be > 0 characters')
       return
     }
-    console.log('nice👌🏻');
+
+    try {
+      let reg = await axios.post(SERVER_URL + '/register', {
+        username: this.state.username,
+        password: this.state.password,
+      })
+      if (reg.data.success) {
+        let login = await axios.post(SERVER_URL + '/login', {
+          username: this.state.username,
+          password: this.state.password,
+        })
+        if (login.data.success) {
+          this.props.onLogin();
+        }
+      }
+    }
+    catch(e) {
+      console.log(e);
+    }
+
   }
 
   render() {
@@ -84,4 +111,10 @@ class Register extends React.Component {
   }
 }
 
-export default Register;
+const mapDispatchToProps = (dispatch) => {
+  return {
+    onLogin: () => dispatch(login()),
+  };
+};
+
+export default connect(null, mapDispatchToProps)(Register);
