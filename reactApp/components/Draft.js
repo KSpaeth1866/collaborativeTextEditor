@@ -8,8 +8,8 @@ import {
   Modifier,
   DefaultDraftBlockRenderMap,
 } from 'draft-js';
-import { Map } from 'immutable';
 import Paper from 'material-ui/Paper';
+import { Map } from 'immutable';
 
 // css styles
 import styles from '../assets/styles'
