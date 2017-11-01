@@ -73,7 +73,7 @@ router.get('/document/add/:docId', function(req, res) {
       res.json({success: false, message: err})
     } else if (!doc) {
       res.json({success: false, message: "No doc found with that ID."})
-    } else if (doc.collaborators.indexOf(req.user._id === -1) {
+    } else if (doc.collaborators.indexOf(req.user._id === -1)) {
       user.docsList.push(doc._id);
       doc.collaborators.push(req.user._id);
       Promise.all([user.save(), doc.save()]).then(a => {
