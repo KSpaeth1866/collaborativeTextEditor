@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 //MODELS
+const mongoose = require('mongoose');
 const User = require('./models/models').User;
 const Document = require('./models/models').Document;
 //PASSPORT
@@ -40,10 +41,10 @@ router.get('/document/list', function(req, res) {
   User.findById(req.user._id).populate('docsList', 'ts name').exec((err, user) => {
     if (err) {
       res.json({success: false, message: err})
-    } else if (!docs) {
-      res.json({success: false, message: "No docs found."})
+    } else if (user.docsList.length === 0) {
+      res.json({success: false, user: user, message: "No docs found."})
     } else {
-      res.json({success:true, user: user, message: "Docs found."})
+      res.json({success: true, user: user, message: "Docs found."})
     }
   })
 });
@@ -67,7 +68,32 @@ router.post('/document/new', function(req, res) {
   })
 });
 
-router.get('/document/:docId', function(req, res) {
+router.get('/document/add/:docId', function(req, res) {
+  console.log(req.params.docId instanceof mongoose.Types.ObjectId);
+  Document.findById(req.params.docId).exec((err, doc) => {
+    if (err) {
+      res.json({success: false, message: err})
+    } else if (!doc) {
+      res.json({success: false, message: "No doc found with that ID."})
+    } else if (doc.collaborators.indexOf(req.user._id) === -1) {
+      let user = req.user;
+      user.docsList.push(doc._id);
+      doc.collaborators.push(req.user._id);
+      Promise.all([user.save(), doc.save(), User.populate(req.user,{path:'docsList', select:'ts name'})]).then(a => {
+        console.log("Found new doc:",doc.name,"for", req.user.username);
+        res.json({success: true, user: a[2], message: "Was not collaborator but you are now."})
+        console.log("CRAZY NEW PROMISE ALL OBJ",a);
+      }).catch(err => {
+        res.json({success: false, message: err})
+      })
+    } else {
+      console.log("Already had that old doc:",doc.name,"for", req.user.username);
+      res.json({success: true, user:req.user, message: "Adding a doc you already have."})
+    }
+  })
+});
+
+router.get('/document/get/:docId', function(req, res) {
   Document.findById(req.params.docId).exec((err, doc) => {
     if (err) {
       res.json({success: false, message: err})
