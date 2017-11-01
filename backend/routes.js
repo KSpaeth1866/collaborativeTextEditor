@@ -36,6 +36,37 @@ router.use(function(req, res, next) {
   }
 })
 
+router.get('/document/list', function(req, res) {
+  User.findById(req.user._id).populate('docsList', 'ts name').exec((err, user) => {
+    if (err) {
+      res.json({success: false, message: err})
+    } else if (!docs) {
+      res.json({success: false, message: "No docs found."})
+    } else {
+      res.json({success:true, docsList:user.docsList})
+    }
+  })
+});
+
+router.post('/document/new', function(req, res) {
+  const newDoc = new Document({
+    owner: req.user._id,
+    collaborators: [req.user._id],
+    name: req.body.name,
+    ts: new Date(),
+    contentState: req.body.contentState
+  });
+  const user = req.user;
+  user.docsList.push(newDoc._id);
+  console.log(newDoc._id);
+  Promise.all([newDoc.save(), user.save()]).then(resultArr => {
+    console.log("Created new doc:",newDoc.name,"for",req.user.username);
+    res.json({success: true, message: "New Doc created"})
+  }).catch(err => {
+    res.json({success: false, message: err})
+  })
+});
+
 router.get('/document/:docId', function(req, res) {
   Document.findById(req.params.docId).exec((err, doc) => {
     if (err) {
@@ -62,24 +93,6 @@ router.get('/document/:docId', function(req, res) {
   })
 });
 
-router.post('/document/new', function(req, res) {
-  const newDoc = new Document({
-    owner: req.user._id,
-    collaborators: [req.user._id],
-    name: req.body.name,
-    ts: new Date(),
-    contentState: req.body.contentState
-  });
-  const user = req.user;
-  user.docsList.push(newDoc._id);
-  console.log(newDoc._id);
-  Promise.all([newDoc.save(), user.save()]).then(resultArr => {
-    console.log("Created new doc:",newDoc.name,"for",req.user.username);
-    res.json({success: true, message: "New Doc created"})
-  }).catch(err => {
-    res.json({success: false, message: err})
-  })
-});
 
 router.post('/document/save/:docId', function(req, res) {
   if (!req.body.contentState) {
