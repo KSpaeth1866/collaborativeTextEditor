@@ -68,7 +68,6 @@ class Login extends React.Component {
         <br />
         <br />
         <RaisedButton
-          style={styles.styleButton}
           primary={true}
           onClick={(e) => this.onClickLogin(e)}
           label={'Login'}
@@ -79,7 +78,6 @@ class Login extends React.Component {
         <br />
         <Link to={'/register'}>
           <RaisedButton
-            style={styles.styleButton}
             primary={true}
             label={'Go to Registration'}
             fullWidth={true}
