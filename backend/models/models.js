@@ -31,7 +31,7 @@ var docsSchema = mongoose.Schema({
   ts: {
     type: Date
   },
-  editorState: {
+  contentState: {
     type: String
   }
 });

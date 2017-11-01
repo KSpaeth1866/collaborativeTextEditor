@@ -37,14 +37,14 @@ router.post('/register', function(req, res) {
   })
 });
 
-// router.use(function(req,res,next){
-//   if (!req.user) {
-//     res.send({success:false, message: "Not logged in! Req.user has not been provided and needs to be seen to."})
-//   } else {
-//     console.log("We've passed the gate, press on!😡 🛡 ⚔️");
-//     next()
-//   }
-// })
+router.use(function(req,res,next){
+  if (!req.user) {
+    res.send({success:false, message: "Not logged in! Req.user has not been provided and needs to be seen to. Set the with credentials flag of all axios calls to secure routes to true. Do that and you've successfully made it into MORDOR!!!🗻 🕷 🗡 🏔  🏹 💍 👿 🌋 "})
+  } else {
+    console.log("We've passed the gate, press on!😡 🛡 ⚔️");
+    next()
+  }
+})
 
 router.get('/document/:docId', function(req, res) {
   Document.findById(req.params.docId).exec((err, doc) => {
