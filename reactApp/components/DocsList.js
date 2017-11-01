@@ -21,6 +21,7 @@ import {blue500, yellow600} from 'material-ui/styles/colors';
 import RaisedButton from 'material-ui/RaisedButton';
 import Divider from 'material-ui/Divider';
 import TextField from 'material-ui/TextField'
+import Dialog from 'material-ui/Dialog';
 
 // css styles
 import styles from '../assets/styles'
@@ -28,6 +29,7 @@ import styles from '../assets/styles'
 // dispatch actions
 import {
   logout,
+  refresh,
 } from '../actions/index';
 
 class DocsList extends React.Component {
@@ -36,6 +38,8 @@ class DocsList extends React.Component {
     this.state = {
       newDocName: '',
       addDocId: '',
+      createOpen: false,
+      addOpen: false,
     }
   }
 
@@ -51,22 +55,45 @@ class DocsList extends React.Component {
 
   async onClickAdd() {
     console.log('add');
+    if (this.state.addDocId === '') return
+
+    try {
+      console.log(this.state.addDocId);
+      let resp = await axios.get(SERVER_URL + '/document/add/' + this.state.addDocId)
+      console.log(resp);
+      if (resp.data.success) {
+        let newUserInfo = await axios.get(SERVER_URL + '/document/list', {
+          withCredentials: true,
+        })
+        this.props.onRefresh(newUserInfo.data.user)
+      }
+
+    }
+    catch (e) {
+      console.log(e);
+    }
   }
 
   async onClickCreate() {
-    console.log('create');
+    if (this.state.newDocName === '') return
+
     let editorState = EditorState.createEmpty();
-    console.log('create: createEmpty: ', editorState);
     let contentState = convertToRaw(editorState.getCurrentContent());
-    console.log('create: convertToRaw: ', contentState);
     contentState = JSON.stringify(contentState);
-    console.log('create: stringify: ', contentState);
+
     try {
-      let resp = axios.post(SERVER_URL + '/document/new', {
+
+      let resp = await axios.post(SERVER_URL + '/document/new', {
         name: this.state.newDocName,
         contentState,
       })
-      console.log(resp);
+      if (resp.data.success) {
+        let newUserInfo = await axios.get(SERVER_URL + '/document/list', {
+          withCredentials: true,
+        })
+        this.props.onRefresh(newUserInfo.data.user)
+      }
+
     }
     catch (e) {
       console.log(e);
@@ -89,7 +116,6 @@ class DocsList extends React.Component {
   }
 
   render() {
-    console.log(this.props.userInfo);
     return (
       <div>
         <Paper
@@ -185,6 +211,7 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch) => {
   return {
     onLogout: () => dispatch(logout()),
+    onRefresh: (user) => dispatch(refresh(user)),
   };
 };
 

@@ -47,6 +47,7 @@ class Register extends React.Component {
         })
         if (login.data.success) {
           this.props.onLogin(login.data.user);
+          this.props.history.push('/');
         }
       }
     }
@@ -90,7 +91,6 @@ class Register extends React.Component {
         <br />
         <br />
         <RaisedButton
-          style={styles.styleButton}
           primary={true}
           onClick={() => this.onClickRegister()}
           label={'Register'}
@@ -101,7 +101,6 @@ class Register extends React.Component {
         <br />
         <Link to={'/'}>
           <RaisedButton
-            style={styles.styleButton}
             primary={true}
             label={'Go to Login'}
             fullWidth={true}

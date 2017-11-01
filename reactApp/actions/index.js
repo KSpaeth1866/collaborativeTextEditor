@@ -19,3 +19,10 @@ export function logout() {
     type: types.LOGOUT,
   };
 }
+
+export function refresh(user) {
+  return {
+    type: types.REFRESH,
+    user,
+  };
+}

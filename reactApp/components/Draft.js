@@ -15,6 +15,7 @@ import {
 import Paper from 'material-ui/Paper';
 import RaisedButton from 'material-ui/RaisedButton';
 import TextField from 'material-ui/TextField'
+import Dialog from 'material-ui/Dialog';
 import { Map } from 'immutable';
 
 // css styles
@@ -30,6 +31,7 @@ import ColorControls from './ColorControls';
 import {
   typing,
   logout,
+  refresh,
 } from '../actions/index';
 
 
@@ -43,6 +45,8 @@ class Draft extends React.Component {
       collaborators: [],
       owner: '',
       ts: '',
+      id: '',
+      shareOpen: false,
     }
     const blockRenderMap = Map({
       'right': {
@@ -70,19 +74,11 @@ class Draft extends React.Component {
   async componentWillMount() {
     let id = this.props.match.params.id;
     try {
-      let doc = await axios.get(SERVER_URL + '/document/' + id)
-      console.log(doc.data.document);
+      let doc = await axios.get(SERVER_URL + '/document/get/' + id)
       let contentState = doc.data.document.contentState;
-      console.log('contentState from db: ', contentState);
       contentState = JSON.parse(contentState);
-      console.log('contentState from db after JSON parse: ', contentState);
       contentState = convertFromRaw(contentState);
-      console.log('contentState from db after convert: ', contentState);
-      // let editorState = EditorState.createEmpty();
       let editorState = EditorState.createWithContent(contentState)
-      console.log('editorState from db: ', editorState);
-      console.log('getCurrentContent of editorState from db: ', editorState.getCurrentContent);
-      // console.log('getCurrentContent of editorState from db: ', editorState.getCurrentContent);
 
       this.setState({
         editorState,
@@ -90,6 +86,8 @@ class Draft extends React.Component {
         collaborators: doc.data.document.collaborators,
         owner: doc.data.document.owner,
         ts: doc.data.document.ts,
+        id: doc.data.document._id,
+        shareOpen: false,
       })
     }
     catch(e) {
@@ -97,8 +95,15 @@ class Draft extends React.Component {
     }
   }
 
+  handleOpen() {
+    this.setState({shareOpen: true});
+  };
+
+  handleClose() {
+    this.setState({shareOpen: false});
+  };
+
   async onClickLogout() {
-    console.log('logout');
     try {
       let logout = await axios.get(SERVER_URL + '/logout')
       this.props.onLogout();
@@ -111,22 +116,25 @@ class Draft extends React.Component {
   async onClickSave() {
     try {
       let contentState = this.state.editorState.getCurrentContent();
-      console.log('save: getCurrentContent: ', contentState);
       contentState = convertToRaw(contentState);
-      console.log('save: convertToRaw: ', contentState);
       contentState = JSON.stringify(contentState)
-      console.log('save: stringify: ', contentState);
       let resp = await axios.post(SERVER_URL + '/document/save/' + this.props.match.params.id, {
         contentState,
         name: this.state.name,
       })
-      console.log(resp);
       resp.data.success ? console.log('saved') : console.log('not saved')
     }
     catch(e) {
       console.log(e);
     }
 
+  }
+
+  async onBackToDocs() {
+    let newUserInfo = await axios.get(SERVER_URL + '/document/list', {
+      withCredentials: true,
+    })
+    this.props.onRefresh(newUserInfo.data.user)
   }
 
   onChange(editorState) {
@@ -204,14 +212,27 @@ class Draft extends React.Component {
   }
 
   render() {
-    // console.log('editorState in render: ', this.state.editorState);
-    // console.log('getCurrentContent in render: ',this.state.editorState.getCurrentContent);
     return (
       <div className={'RichEditor-root'}>
+        <Dialog
+          title="Share this ID to share this Doc"
+          actions={
+            <RaisedButton
+              label="Close"
+              primary={true}
+              onClick={() => this.handleClose()}
+            />
+          }
+          modal={false}
+          open={this.state.shareOpen}
+          onRequestClose={this.handleClose}
+        >
+          {this.state.id}
+        </Dialog>
         <TextField
+          id={'this-makes-a-warning-shut-up'}
           style={styles.header}
           value={this.state.name}
-          // floatingLabelText="Doc Name"
           onChange={(e) => this.setState({name: e.target.value})}
         />
         <br />
@@ -256,9 +277,15 @@ class Draft extends React.Component {
           onClick={() => this.onClickSave()}
           label={'Save'}
         />
+        <RaisedButton
+          primary={true}
+          onClick={() => this.handleOpen()}
+          label={'Share'}
+        />
         <Link to='/'>
           <RaisedButton
             primary={true}
+            onClick={() => this.onBackToDocs()}
             label={'Back to Docs'}
           />
         </Link>
@@ -283,6 +310,7 @@ class Draft extends React.Component {
   const mapDispatchToProps = (dispatch) => {
     return {
       onLogout: () => dispatch(logout()),
+      onRefresh: (user) => dispatch(refresh(user)),
     };
   };
 

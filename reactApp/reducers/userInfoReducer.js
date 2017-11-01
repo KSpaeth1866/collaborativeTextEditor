@@ -18,6 +18,11 @@ const loggedInReducer = (state = initialState, action) => {
         user: null,
         loggedIn: false,
       };
+    case types.REFRESH:
+      return {
+        user: action.user,
+        loggedIn: true,
+      };
     default:
       return state;
   }
