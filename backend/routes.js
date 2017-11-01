@@ -40,10 +40,10 @@ router.get('/document/list', function(req, res) {
   User.findById(req.user._id).populate('docsList', 'ts name').exec((err, user) => {
     if (err) {
       res.json({success: false, message: err})
-    } else if (!docs) {
-      res.json({success: false, message: "No docs found."})
+    } else if (user.docsList.length === 0) {
+      res.json({success: false, user: user, message: "No docs found."})
     } else {
-      res.json({success:true, user: user, message: "Docs found."})
+      res.json({success: true, user: user, message: "Docs found."})
     }
   })
 });
