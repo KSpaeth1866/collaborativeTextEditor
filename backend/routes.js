@@ -8,7 +8,6 @@ const User = require('./models/models').User;
 const Document = require('./models/models').Document;
 //PASSPORT
 const passport = require('./auth');
-router.use(passport.initialize());
 /* GET home page. */
 router.get('/', function(req, res) {
   res.send('Hello World!')
@@ -40,8 +39,9 @@ router.post('/register', function(req, res) {
 
 // router.use(function(req,res,next){
 //   if (!req.user) {
-//     res.send({success:false, message: "Not logged in!"})
+//     res.send({success:false, message: "Not logged in! Req.user has not been provided and needs to be seen to."})
 //   } else {
+//     console.log("We've passed the gate, press on!😡 🛡 ⚔️");
 //     next()
 //   }
 // })
@@ -51,23 +51,24 @@ router.get('/document/:docId', function(req, res) {
     if (err) {
       res.json({success: false, message: err})
     } else {
-      // if (doc.collaborators.indexOf(req.user._id) === 'not') {
-      if ('yes' === 'not') {
-        User.findById(req.body.user._id).exec((err,user) => {
+      if (doc.collaborators.indexOf(req.user._id) !== 1) {
+      // if ('yes' === 'not') {
+        User.findById(req.user._id).exec((err,user) => {
           user.docsList.push(doc._id);
-          doc.collaborators.push(req.user._id)
+          doc.collaborators.push(req.user._id);
+          console.log("NEW USER\n",user.docsList,"\n\nNEW DOC\n",doc.collaborators);
           Promise.all([
             user.save(),
             doc.save()
           ]).then(a => {
             console.log("find doc new user:",a);
-            res.json({success: true, document: doc})
+            res.json({success: true, document: doc, message: "Was not member but is now."})
           }).catch(err=>{
             res.json({success: false, message: err})
           })
         })
       } else {
-        res.json({success: true, document: doc})
+        res.json({success: true, document: doc, message: "Opening a doc you have seen before."})
       }
     }
   })
@@ -75,19 +76,18 @@ router.get('/document/:docId', function(req, res) {
 
 router.post('/document/new', function(req, res) {
   const newDoc = new Document({
-    owner: req.body.user._id,
-    collaborators: [req.body.user._id],
+    owner: req.user._id,
+    collaborators: [req.user._id],
     name: req.body.name,
     ts: new Date(),
-    editorState: EditorState.createEmpty(),
+    editorState: '',
   });
+  const user = req.user;
+  user.docsList.push(newDoc._id);
   console.log(newDoc._id);
   Promise.all([
     newDoc.save(),
-    User.findById(req.body.user._id).exec( (err,user) => {
-      user.docsList.push(newDoc._id)
-      user.save()
-    })
+    user.save()
   ]).then(resultArr => {
     res.send({success:true, document: resultArr[0], user: resultArr[1]})
   }).catch(err => {
@@ -96,13 +96,17 @@ router.post('/document/new', function(req, res) {
 });
 
 router.post('/document/save/:docId', function(req, res) {
-  Document.findByIdAndUpdate({
-    _id: req.params.docId
-  }, {editorState: req.body.editorState}).then(result => {
-    res.json({success:true})
-  }).catch(err=>{
-    res.json({success:false,message:err})
-  })
+  if (!req.body.editorState) {
+    res.json({success:false,message:"No editorState provided"})
+  } else {
+    Document.findByIdAndUpdate({
+      _id: req.params.docId
+    }, {editorState: req.body.editorState}).then(result => {
+      res.json({success:true})
+    }).catch(err=>{
+      res.json({success:false,message:err})
+    })
+  }
 });
 
 router.get('/logout', function(req, res) {

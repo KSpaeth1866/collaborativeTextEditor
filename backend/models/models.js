@@ -1,6 +1,4 @@
 var mongoose = require('mongoose');
-mongoose.connect(process.env.MONGODB_URI, {useMongoClient: true} );
-mongoose.Promise = global.Promise;
 
 var userSchema = mongoose.Schema({
   username: {
@@ -34,7 +32,7 @@ var docsSchema = mongoose.Schema({
     type: Date
   },
   editorState: {
-    type: Object
+    type: String
   }
 });
 //
