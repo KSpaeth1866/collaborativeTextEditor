@@ -20,6 +20,15 @@ app.use(bodyParser.json());
 app.get('/', function(req, res) {
   res.send('Hello World!')
 })
+app.post('/test', function(req, res) {
+  User.findById(req.body.id).populate('docsList','ts name').exec( (err,user) => {
+    if (!err) {
+      console.log(user);
+      res.send({success:true,user:user})
+    }
+
+  })
+})
 
 app.post('/login', passport.authenticate('local'), function(req, res) {
   res.json({success: true, user: req.user});
@@ -45,7 +54,7 @@ app.post('/register', function(req, res) {
 // })
 
 app.get('/document/:docId', function(req, res) {
-  Document.findById({_id: req.params.docId}).exec((err, doc) => {
+  Document.findById(req.params.docId).exec((err, doc) => {
     if (err) {
       res.json({success: false, message: err})
     } else {
@@ -58,16 +67,20 @@ app.post('/document/new', function(req, res) {
   const newDoc = new Document({
     editorState: EditorState.createEmpty(),
     owner: req.body.user._id,
-    collaborators: [],
+    collaborators: [req.body.user._id],
     name: req.body.name,
+    ts: new Date(),
   });
-  newDoc.collaborators.push(req.body.user._id);
-  newDoc.save(err => {
-    if (err) {
-      res.json({success: false, message: err})
-    } else {
-      res.json({success: true})
-    }
+  Promise.all([
+    newDoc.save(),
+    User.findById(req.body.user._id).exec( (err,user) => {
+      user.docsList.push(newDoc._id)
+      user.save()
+    })
+  ]).then(resultArr => {
+    res.send({success:true, document: resultArr[0], user: resultArr[1]})
+  }).catch(err => {
+    res.send({success:false, message: err})
   })
 });
 
@@ -79,7 +92,7 @@ app.post('/document/save/:docId', function(req, res) {
 
 app.get('/logout', function(req, res) {
   req.logout();
-  res.redirect('/');
+  res.json({success:true});
 });
 
 io.on('connection', function(socket) {

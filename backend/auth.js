@@ -3,9 +3,7 @@ var passport = require('passport'),
 const User = require('./models/models').User;
 const Document = require('./models/models').Document;
 passport.use(new LocalStrategy(function(username, password, done) {
-  User.findOne({
-    username: username
-  }, function(err, user) {
+  User.findOne({username: username}).populate('docsList', 'ts name').exec((err, user) => {
     if (err) {
       return done(err);
     }
