@@ -48,7 +48,9 @@ router.get('/document/:docId', function(req, res) {
   Document.findById(req.params.docId).exec((err, doc) => {
     if (err) {
       res.json({success: false, message: err})
-    } else {
+    } else if (!doc) {
+      res.json({success: false, message: "No doc found with that ID."})
+    }else {
       if (doc.collaborators.indexOf(req.user._id) === -1) {
       // if ('yes' === 'not') {
         User.findById(req.user._id).exec((err,user) => {
