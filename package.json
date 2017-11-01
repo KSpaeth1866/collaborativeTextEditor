@@ -10,7 +10,7 @@
     "devServer": "nodemon --watch backend backend/server.js",
     "webpack": "webpack",
     "prodWebpack": "webpack -p",
-    "start": "electron main.js",
+    "start": "node backend/server.js",
     "server": "node backend/server.js"
   },
   "repository": "",
@@ -35,6 +35,7 @@
   "dependencies": {
     "axios": "^0.17.0",
     "babel-polyfill": "^6.26.0",
+    "body-parser": "^1.18.2",
     "draft-js": "^0.10.4",
     "express": "^4.15.3",
     "immutable": "^3.8.2",
@@ -47,6 +48,7 @@
     "react-redux": "^5.0.6",
     "react-router-dom": "^4.2.2",
     "react-router-redux": "^4.0.8",
-    "redux": "^3.7.2"
+    "redux": "^3.7.2",
+    "socket.io": "^2.0.4"
   }
 }

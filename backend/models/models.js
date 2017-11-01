@@ -1,6 +1,6 @@
 var mongoose = require('mongoose');
-mongoose.connect(process.env.MONGODB_URI);
-
+mongoose.connect(process.env.MONGODB_URI, {useMongoClient: true} );
+mongoose.Promise = global.Promise;
 var userSchema = mongoose.Schema({
   username: {
     type: String,
@@ -32,6 +32,9 @@ var docsSchema = mongoose.Schema({
     type: String,
     unique: true
   },
+  ts: {
+    type: Date
+  }
 });
 //
 // docsSchema.methods.addCollaborator = function (cb){
