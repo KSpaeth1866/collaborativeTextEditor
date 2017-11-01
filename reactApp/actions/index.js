@@ -7,9 +7,10 @@ export function typing(state) {
   };
 }
 
-export function login() {
+export function login(user) {
   return {
     type: types.LOGIN,
+    user,
   };
 }
 

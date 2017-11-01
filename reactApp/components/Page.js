@@ -7,7 +7,6 @@ import {
   Switch,
   Link,
 } from 'react-router-dom';
-import RaisedButton from 'material-ui/RaisedButton';
 
 // css styles
 import styles from '../assets/styles'
@@ -30,7 +29,7 @@ class Page extends React.Component {
     return (
       <div style={styles.pageContainer}>
         {
-          this.props.loggedIn
+          this.props.userInfo.loggedIn
           ?
           <DocsList />
           :
@@ -48,15 +47,8 @@ class Page extends React.Component {
 
 const mapStateToProps = (state) => {
   return {
-    loggedIn: state.loggedIn,
+    userInfo: state.userInfo,
   };
 };
 
-const mapDispatchToProps = (dispatch) => {
-  return {
-    onLogin: () => dispatch(login()),
-    onLogout: () => dispatch(logout()),
-  };
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(Page);
+export default connect(mapStateToProps, null)(Page);
