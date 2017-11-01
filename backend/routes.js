@@ -76,9 +76,9 @@ router.get('/document/add/:docId', function(req, res) {
     } else if (doc.collaborators.indexOf(req.user._id === -1)) {
       user.docsList.push(doc._id);
       doc.collaborators.push(req.user._id);
-      Promise.all([user.save(), doc.save()]).then(a => {
+      Promise.all([user.save(), doc.save(), Model.populate(req.user,{'docsList', 'ts name'})]).then(a => {
         console.log("Found new doc:",doc.name,"for", req.user.username);
-        res.json({success: true, user: user, message: "Was not collaborator but you are now."})
+        res.json({success: true, user: a[2], message: "Was not collaborator but you are now."})
       }).catch(err => {
         res.json({success: false, message: err})
       })
