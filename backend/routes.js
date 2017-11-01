@@ -79,6 +79,7 @@ router.get('/document/add/:docId', function(req, res) {
       Promise.all([user.save(), doc.save(), Model.populate(req.user,{'docsList', 'ts name'})]).then(a => {
         console.log("Found new doc:",doc.name,"for", req.user.username);
         res.json({success: true, user: a[2], message: "Was not collaborator but you are now."})
+        console.log("CRAZY NEW PROMISE ALL OBJ",a);
       }).catch(err => {
         res.json({success: false, message: err})
       })
