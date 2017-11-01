@@ -67,7 +67,29 @@ router.post('/document/new', function(req, res) {
   })
 });
 
-router.get('/document/:docId', function(req, res) {
+router.get('/document/add/:docId', function(req, res) {
+  Document.findById(req.params.docId).exec((err, doc) => {
+    if (err) {
+      res.json({success: false, message: err})
+    } else if (!doc) {
+      res.json({success: false, message: "No doc found with that ID."})
+    } else if (doc.collaborators.indexOf(req.user._id === -1) {
+      user.docsList.push(doc._id);
+      doc.collaborators.push(req.user._id);
+      Promise.all([user.save(), doc.save()]).then(a => {
+        console.log("Found new doc:",doc.name,"for", req.user.username);
+        res.json({success: true, user: user, message: "Was not collaborator but you are now."})
+      }).catch(err => {
+        res.json({success: false, message: err})
+      })
+    } else {
+      console.log("Already had that old doc:",doc.name,"for", req.user.username);
+      res.json({success: true, req.user, message: "Adding a doc you already have."})
+    }
+  })
+});
+
+router.get('/document/get/:docId', function(req, res) {
   Document.findById(req.params.docId).exec((err, doc) => {
     if (err) {
       res.json({success: false, message: err})
