@@ -48,7 +48,7 @@ router.get('/document/:docId', function(req, res) {
           user.docsList.push(doc._id);
           doc.collaborators.push(req.user._id);
           Promise.all([user.save(), doc.save()]).then(a => {
-            console.log("Found new doc:"doc.name,"for", req.user.username);
+            console.log("Found new doc:",doc.name,"for", req.user.username);
             res.json({success: true, document: doc, message: "Was not member but is now."})
           }).catch(err => {
             res.json({success: false, message: err})
