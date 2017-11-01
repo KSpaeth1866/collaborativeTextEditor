@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 mongoose.connect(process.env.MONGODB_URI, {useMongoClient: true} );
 mongoose.Promise = global.Promise;
+
 var userSchema = mongoose.Schema({
   username: {
     type: String,
@@ -17,6 +18,10 @@ var userSchema = mongoose.Schema({
 });
 
 var docsSchema = mongoose.Schema({
+  name: {
+    type: String,
+    unique: true
+  },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User"
@@ -25,16 +30,12 @@ var docsSchema = mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   }],
-  name: {
-    type: String,
-    unique: true
-  },
   ts: {
     type: Date
   },
   editorState: {
     type: Object
-  },
+  }
 });
 //
 // docsSchema.methods.addCollaborator = function (cb){
