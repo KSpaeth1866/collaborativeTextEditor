@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 //MODELS
+const mongoose = require('mongoose');
 const User = require('./models/models').User;
 const Document = require('./models/models').Document;
 //PASSPORT
@@ -68,6 +69,7 @@ router.post('/document/new', function(req, res) {
 });
 
 router.get('/document/add/:docId', function(req, res) {
+  console.log(req.params.docId instanceof mongoose.Types.ObjectId);
   Document.findById(req.params.docId).exec((err, doc) => {
     if (err) {
       res.json({success: false, message: err})
