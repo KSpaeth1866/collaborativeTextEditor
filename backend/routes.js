@@ -84,7 +84,7 @@ router.get('/document/add/:docId', function(req, res) {
       })
     } else {
       console.log("Already had that old doc:",doc.name,"for", req.user.username);
-      res.json({success: true, req.user, message: "Adding a doc you already have."})
+      res.json({success: true, user:req.user, message: "Adding a doc you already have."})
     }
   })
 });
