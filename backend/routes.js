@@ -43,7 +43,7 @@ router.get('/document/list', function(req, res) {
     } else if (!docs) {
       res.json({success: false, message: "No docs found."})
     } else {
-      res.json({success:true, user: user})
+      res.json({success:true, user: user, message: "Docs found."})
     }
   })
 });
