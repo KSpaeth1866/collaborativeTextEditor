@@ -3,11 +3,9 @@ const express = require('express');
 const app = express();
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
-const server = require('http').createServer(app);
-const io = require('socket.io')(server);
 //Mongoose
 const mongoose = require('mongoose');
-mongoose.connect(process.env.MONGODB_URI, {useMongoClient: true} )  .then(() =>  console.log('connection succesful'))
+mongoose.connect(process.env.MONGODB_URI, {useMongoClient: true} )  .then(() =>  console.log('Connected to 🦍'))
   .catch((err) => console.error(err));;
 mongoose.Promise = global.Promise;
 //BODYPARSER
@@ -29,6 +27,8 @@ app.use(passport.session());
 const routes = require('./routes')
 app.use('/', routes);
 //SOCKET EVENTS
+const server = require('http').createServer(app);
+const io = require('socket.io')(server);
 io.sockets.on('connection', function(socket) {
     // once a client has connected, we expect to get a ping from them saying what room they want to join
     socket.on('documentJoin', function(doc) {

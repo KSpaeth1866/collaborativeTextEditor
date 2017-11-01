@@ -1,8 +1,6 @@
 //ROUTER SETUP
 const express = require('express');
 const router = express.Router();
-//Draft js object to setup EditorState
-const {EditorState} = require('draft-js');
 //MODELS
 const User = require('./models/models').User;
 const Document = require('./models/models').Document;
@@ -51,7 +49,7 @@ router.get('/document/:docId', function(req, res) {
     if (err) {
       res.json({success: false, message: err})
     } else {
-      if (doc.collaborators.indexOf(req.user._id) !== 1) {
+      if (doc.collaborators.indexOf(req.user._id) === -1) {
       // if ('yes' === 'not') {
         User.findById(req.user._id).exec((err,user) => {
           user.docsList.push(doc._id);
@@ -80,7 +78,7 @@ router.post('/document/new', function(req, res) {
     collaborators: [req.user._id],
     name: req.body.name,
     ts: new Date(),
-    editorState: '',
+    contentState: req.body.contentState,
   });
   const user = req.user;
   user.docsList.push(newDoc._id);
@@ -96,12 +94,12 @@ router.post('/document/new', function(req, res) {
 });
 
 router.post('/document/save/:docId', function(req, res) {
-  if (!req.body.editorState) {
-    res.json({success:false,message:"No editorState provided"})
+  if (!req.body.contentState) {
+    res.json({success:false, message:"No contentState provided"})
   } else {
     Document.findByIdAndUpdate({
       _id: req.params.docId
-    }, {editorState: req.body.editorState}).then(result => {
+    }, {contentState: req.body.contentState}).then(result => {
       res.json({success:true})
     }).catch(err=>{
       res.json({success:false,message:err})
