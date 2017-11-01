@@ -28,18 +28,20 @@ class Page extends React.Component {
   render() {
     return (
       <div style={styles.pageContainer}>
-        {
-          this.props.userInfo.loggedIn
-          ?
-          <DocsList />
-          :
           <HashRouter>
             <Switch>
-              <Route exact path='/' component={Login} />
+              <Route exact path='/' component={
+                this.props.userInfo.loggedIn
+                ?
+                DocsList
+                :
+                Login
+              }
+              />
               <Route path='/register' component={Register} />
+              <Route path='/document/:id' component={Draft} />
             </Switch>
           </HashRouter>
-        }
       </div>
     );
   }

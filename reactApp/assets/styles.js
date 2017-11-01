@@ -44,11 +44,18 @@ const styles = {
   docsListContainer: {
   },
   listItem: {
+    textDecoration: 'none',
   },
   newDocInput: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'baseline',
+  },
+  newDocInputBtn: {
+    flex: 1,
+  },
+  newDocInputText: {
+    flex: 3,
   },
   docsListBody: {
     display: 'flex',
@@ -63,7 +70,7 @@ const styles = {
     flexDirection: 'column',
     alignItems: 'center',
     padding: 20,
-    margin: 20,
+    margin: 10,
   },
 };
 
