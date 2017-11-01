@@ -33,7 +33,7 @@ class Login extends React.Component {
         password: this.state.password,
       })
       if (login.data.success) {
-        this.props.onLogin();
+        this.props.onLogin(login.data.user);
       }
     }
     catch(e) {
@@ -45,7 +45,7 @@ class Login extends React.Component {
     return (
       <Paper
         zDepth={2}
-        style={styles.container}
+        style={styles.authContainer}
         >
         <div
           style={styles.authHeader}>
@@ -93,7 +93,7 @@ class Login extends React.Component {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    onLogin: () => dispatch(login()),
+    onLogin: (user) => dispatch(login(user)),
   };
 };
 

@@ -21,18 +21,40 @@ const styles = {
     fontSize: 15,
     fontFamily: '\'Helvetica\', sans-serif',
   },
-  styleButton: {
-    margin: 2,
+  docsListHeader: {
+    fontSize: 25,
+    fontFamily: '\'Helvetica\', sans-serif',
   },
   controlContainer: {
     padding: 10,
     margin: 15,
   },
-  container: {
+  headerContainer: {
+    display: 'flex',
+    justifyContent: 'space-between',
+  },
+  authContainer: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'stretch',
     width: 400,
+    padding: 50,
+    margin: 50,
+  },
+  docsListContainer: {
+  },
+  listItem: {
+  },
+  newDocInput: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
+  },
+  docsListBody: {
+    display: 'flex',
+    flexDirection: 'column',
+    width: 500,
+    alignItems: 'stretch',
     padding: 50,
     margin: 50,
   },
@@ -42,7 +64,7 @@ const styles = {
     alignItems: 'center',
     padding: 20,
     margin: 20,
-  }
+  },
 };
 
 export default styles;

@@ -2,11 +2,11 @@ import { routerReducer as routing } from 'react-router-redux';
 import { combineReducers } from 'redux';
 
 import editorStateReducer from './editorStateReducer';
-import loggedInReducer from './loggedInReducer';
+import userInfoReducer from './userInfoReducer';
 
 const rootReducer = combineReducers({
   editorState: editorStateReducer,
-  loggedIn: loggedInReducer,
+  userInfo: userInfoReducer,
   routing,
 });
 

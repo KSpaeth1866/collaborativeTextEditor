@@ -30,9 +30,6 @@ import {
 class Draft extends React.Component {
   constructor(props) {
     super(props);
-    // this.state = {
-    //   editorState: EditorState.createEmpty()
-    // };
     const blockRenderMap = Map({
       'right': {
         element: 'div'
@@ -59,12 +56,6 @@ class Draft extends React.Component {
   focus() {
     this.editor.focus();
   }
-
-  // onChange(editorState) {
-  //   this.setState({
-  //     editorState,
-  //   })
-  // }
 
   _onTab(e) {
     e.preventDefault;
