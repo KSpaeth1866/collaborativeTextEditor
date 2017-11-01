@@ -51,7 +51,8 @@ router.get('/document/:docId', function(req, res) {
     if (err) {
       res.json({success: false, message: err})
     } else {
-      if (doc.collaborators.indexOf(req.user._id) === 'not') {
+      // if (doc.collaborators.indexOf(req.user._id) === 'not') {
+      if ('yes' === 'not') {
         User.findById(req.body.user._id).exec((err,user) => {
           user.docsList.push(doc._id);
           doc.collaborators.push(req.user._id)
