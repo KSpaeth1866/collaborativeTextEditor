@@ -8,19 +8,11 @@ const Document = require('./models/models').Document;
 const passport = require('./auth');
 /* GET home page. */
 router.get('/', function(req, res) {
-  res.send('Hello World!')
-})
-router.post('/test', function(req, res) {
-  User.findById(req.body.id).populate('docsList', 'ts name').exec((err, user) => {
-    if (!err) {
-      console.log(user);
-      res.send({success: true, user: user})
-    }
-
-  })
+  res.json({success:true, message: 'Hello World!'})
 })
 
 router.post('/login', passport.authenticate('local'), function(req, res) {
+  console.log(req.user.username,"has logged in:",req.user._id);
   res.json({success: true, user: req.user});
 });
 
@@ -39,7 +31,7 @@ router.use(function(req, res, next) {
   if (!req.user) {
     res.json({success: false, message: "Not logged in! Req.user has not been provided and needs to be seen to. Set the with credentials flag of all axios calls to secure routes to true. Do that and you've successfully made it into MORDOR!!!🗻 🕷 🗡 🏔  🏹 💍 👿 🌋 "})
   } else {
-    console.log("We've passed the gate, press on!😡 🛡 ⚔️");
+    console.log(req.user.username, "has passed the gate, press on!😡 🛡 ⚔️");
     next()
   }
 })
@@ -55,15 +47,15 @@ router.get('/document/:docId', function(req, res) {
         User.findById(req.user._id).exec((err, user) => {
           user.docsList.push(doc._id);
           doc.collaborators.push(req.user._id);
-          console.log("NEW USER\n", user.docsList, "\n\nNEW DOC\n", doc.collaborators);
           Promise.all([user.save(), doc.save()]).then(a => {
-            console.log("find doc new user:", a);
+            console.log("Found new doc:"doc.name,"for", req.user.username);
             res.json({success: true, document: doc, message: "Was not member but is now."})
           }).catch(err => {
             res.json({success: false, message: err})
           })
         })
       } else {
+        console.log("Found old doc:",doc.name,"for", req.user.username);
         res.json({success: true, document: doc, message: "Opening a doc you have seen before."})
       }
     }
@@ -82,6 +74,7 @@ router.post('/document/new', function(req, res) {
   user.docsList.push(newDoc._id);
   console.log(newDoc._id);
   Promise.all([newDoc.save(), user.save()]).then(resultArr => {
+    console.log("Created new doc:",newDoc.name,"for",req.user.username);
     res.json({success: true, message: "New Doc created"})
   }).catch(err => {
     res.json({success: false, message: err})
@@ -95,6 +88,7 @@ router.post('/document/save/:docId', function(req, res) {
     Document.findByIdAndUpdate({
       _id: req.params.docId
     }, {contentState: req.body.contentState, name: req.body.name}).then(result => {
+      console.log("Saved doc:",req.body.name,"for", req.user.username);
       res.json({success: true, message: "You've successfully made it into MORDOR!!!🗻 🕷 🗡 🏔  🏹 💍 👿 🌋 "})
     }).catch(err => {
       res.json({success: false, message: err})
@@ -103,6 +97,7 @@ router.post('/document/save/:docId', function(req, res) {
 });
 
 router.get('/logout', function(req, res) {
+  console.log(req.user.username,"has logged out. Bye Felicia🙈");
   req.logout();
   res.json({success: true});
 });
