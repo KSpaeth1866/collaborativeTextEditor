@@ -4,9 +4,7 @@ import { connect } from 'react-redux';
 import RaisedButton from 'material-ui/RaisedButton';
 import TextField from 'material-ui/TextField'
 import Paper from 'material-ui/Paper';
-import {
-  Link,
-} from 'react-router-dom';
+import {Link} from 'react-router-dom';
 import axios from 'axios';
 
 // css styles
@@ -31,6 +29,7 @@ class Login extends React.Component {
       let login = await axios.post(SERVER_URL + '/login', {
         username: this.state.username,
         password: this.state.password,
+        withCredentials: true,
       })
       if (login.data.success) {
         this.props.onLogin(login.data.user);

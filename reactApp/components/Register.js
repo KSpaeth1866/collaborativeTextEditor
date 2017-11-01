@@ -38,6 +38,7 @@ class Register extends React.Component {
       let reg = await axios.post(SERVER_URL + '/register', {
         username: this.state.username,
         password: this.state.password,
+        withCredentials: true,
       })
       if (reg.data.success) {
         let login = await axios.post(SERVER_URL + '/login', {

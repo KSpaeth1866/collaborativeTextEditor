@@ -27,18 +27,18 @@ class BlockStyleControls extends React.Component{
   constructor(props) {
     super(props)
 
-    this.selection = this.props.editorState.getSelection();
-    this.blockType = this.props.editorState
-    .getCurrentContent()
-    .getBlockForKey(this.selection.getStartKey())
-    .getType();
+    // this.selection = this.props.editorState.getSelection();
+    // this.blockType = this.props.editorState
+    // .getCurrentContent()
+    // .getBlockForKey(this.selection.getStartKey())
+    // .getType();
   }
 
   render() {
-    this.blockType = this.props.editorState
-    .getCurrentContent()
-    .getBlockForKey(this.selection.getStartKey())
-    .getType();
+    // this.blockType = this.props.editorState
+    // .getCurrentContent()
+    // .getBlockForKey(this.selection.getStartKey())
+    // .getType();
     return (
       <div className="RichEditor-controls">
         {BLOCK_TYPES.map((type) =>

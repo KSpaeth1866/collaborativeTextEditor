@@ -1,14 +1,20 @@
 // packages
 import React from 'react';
 import { connect } from 'react-redux';
+import axios from 'axios';
+import { Link } from 'react-router-dom';
 import {
   Editor,
   EditorState,
   RichUtils,
   Modifier,
   DefaultDraftBlockRenderMap,
+  convertFromRaw,
+  convertToRaw,
 } from 'draft-js';
 import Paper from 'material-ui/Paper';
+import RaisedButton from 'material-ui/RaisedButton';
+import TextField from 'material-ui/TextField'
 import { Map } from 'immutable';
 
 // css styles
@@ -23,6 +29,7 @@ import ColorControls from './ColorControls';
 // dispatch actions
 import {
   typing,
+  logout,
 } from '../actions/index';
 
 
@@ -30,6 +37,13 @@ import {
 class Draft extends React.Component {
   constructor(props) {
     super(props);
+    this.state = {
+      editorState: EditorState.createEmpty(),
+      name: '',
+      collaborators: [],
+      owner: '',
+      ts: '',
+    }
     const blockRenderMap = Map({
       'right': {
         element: 'div'
@@ -53,6 +67,74 @@ class Draft extends React.Component {
   //   return false;
   // }
 
+  async componentWillMount() {
+    let id = this.props.match.params.id;
+    try {
+      let doc = await axios.get(SERVER_URL + '/document/' + id)
+      console.log(doc.data.document);
+      let contentState = doc.data.document.contentState;
+      console.log('contentState from db: ', contentState);
+      contentState = JSON.parse(contentState);
+      console.log('contentState from db after JSON parse: ', contentState);
+      contentState = convertFromRaw(contentState);
+      console.log('contentState from db after convert: ', contentState);
+      // let editorState = EditorState.createEmpty();
+      let editorState = EditorState.createWithContent(contentState)
+      console.log('editorState from db: ', editorState);
+      console.log('getCurrentContent of editorState from db: ', editorState.getCurrentContent);
+      // console.log('getCurrentContent of editorState from db: ', editorState.getCurrentContent);
+
+      this.setState({
+        editorState,
+        name: doc.data.document.name,
+        collaborators: doc.data.document.collaborators,
+        owner: doc.data.document.owner,
+        ts: doc.data.document.ts,
+      })
+    }
+    catch(e) {
+      console.log(e);
+    }
+  }
+
+  async onClickLogout() {
+    console.log('logout');
+    try {
+      let logout = await axios.get(SERVER_URL + '/logout')
+      this.props.onLogout();
+    }
+    catch(e) {
+      console.log(e);
+    }
+  }
+
+  async onClickSave() {
+    try {
+      let contentState = this.state.editorState.getCurrentContent();
+      console.log('save: getCurrentContent: ', contentState);
+      contentState = convertToRaw(contentState);
+      console.log('save: convertToRaw: ', contentState);
+      contentState = JSON.stringify(contentState)
+      console.log('save: stringify: ', contentState);
+      let resp = await axios.post(SERVER_URL + '/document/save/' + this.props.match.params.id, {
+        contentState,
+        name: this.state.name,
+      })
+      console.log(resp);
+      resp.data.success ? console.log('saved') : console.log('not saved')
+    }
+    catch(e) {
+      console.log(e);
+    }
+
+  }
+
+  onChange(editorState) {
+    this.setState({
+      editorState,
+    })
+  }
+
   focus() {
     this.editor.focus();
   }
@@ -60,32 +142,32 @@ class Draft extends React.Component {
   _onTab(e) {
     e.preventDefault;
     const maxDepth = 4;
-    this.props.onChange(
+    this.onChange(
       RichUtils.onTab(
-        this.props.editorState,
+        this.state.editorState,
         maxDepth));
   }
 
   _toggleBlockType(blockType) {
-    this.props.onChange(
+    this.onChange(
       RichUtils.toggleBlockType(
-        this.props.editorState,
+        this.state.editorState,
         blockType
       )
     );
   }
 
   _toggleInlineStyle(inlineStyle) {
-    this.props.onChange(
+    this.onChange(
       RichUtils.toggleInlineStyle(
-        this.props.editorState,
+        this.state.editorState,
         inlineStyle
       )
     );
   }
 
   _toggleColor(toggledColor) {
-    const {editorState} = this.props;
+    const {editorState} = this.state;
     const selection = editorState.getSelection();
     // Let's just allow one color at a time. Turn off all active colors.
     const nextContentState = Object.keys(colorStyleMap)
@@ -106,7 +188,7 @@ class Draft extends React.Component {
         toggledColor
       );
     }
-    this.props.onChange(nextEditorState);
+    this.onChange(nextEditorState);
   }
 
   myBlockStyleFn(contentBlock) {
@@ -122,47 +204,71 @@ class Draft extends React.Component {
   }
 
   render() {
+    // console.log('editorState in render: ', this.state.editorState);
+    // console.log('getCurrentContent in render: ',this.state.editorState.getCurrentContent);
     return (
       <div className={'RichEditor-root'}>
-        <Paper
+        <TextField
           style={styles.header}
-          zDepth={2}
-        >
-          Draft
-        </Paper>
+          value={this.state.name}
+          // floatingLabelText="Doc Name"
+          onChange={(e) => this.setState({name: e.target.value})}
+        />
+        <br />
         <Paper
           style={styles.controlContainer}
           zDepth={2}
           >
           <BlockStyleControls
-            editorState={this.props.editorState}
+            editorState={this.state.editorState}
             onToggle={(style) => this._toggleBlockType(style)}
           />
           <InlineStyleControls
-            editorState={this.props.editorState}
+            editorState={this.state.editorState}
             onToggle={(style) => this._toggleInlineStyle(style)}
           />
           <ColorControls
-            editorState={this.props.editorState}
+            editorState={this.state.editorState}
             onToggle={(style) => this._toggleColor(style)}
           />
         </Paper>
+        <br />
         <Paper
           style={styles.editor}
           zDepth={2}
           onClick={() => this.focus()}
           >
           <Editor
-            editorState={this.props.editorState}
+            editorState={this.state.editorState}
             customStyleMap={colorStyleMap}
             blockStyleFn={this.myBlockStyleFn}
             blockRenderMap={this.extendedBlockRenderMap}
-            onChange={(state) => this.props.onChange(state)}
+            onChange={(state) => this.onChange(state)}
             onTab={(e) => this._onTab(e)}
             // handleKeyCommand={() => this._handleKeyCommand()}
             ref={(ref) => this.editor = ref}
           />
         </Paper>
+        <br />
+        <br />
+        <RaisedButton
+          primary={true}
+          onClick={() => this.onClickSave()}
+          label={'Save'}
+        />
+        <Link to='/'>
+          <RaisedButton
+            primary={true}
+            label={'Back to Docs'}
+          />
+        </Link>
+        <Link to='/'>
+          <RaisedButton
+            primary={true}
+            onClick={() => this.onClickLogout()}
+            label={'Logout'}
+          />
+        </Link>
       </div>
       );
     }
@@ -170,13 +276,13 @@ class Draft extends React.Component {
 
   const mapStateToProps = (state) => {
     return {
-      editorState: state.editorState,
+      userInfo: state.userInfo,
     };
   };
 
   const mapDispatchToProps = (dispatch) => {
     return {
-      onChange: (state) => dispatch(typing(state)),
+      onLogout: () => dispatch(logout()),
     };
   };
 

@@ -5,7 +5,7 @@ import editorStateReducer from './editorStateReducer';
 import userInfoReducer from './userInfoReducer';
 
 const rootReducer = combineReducers({
-  editorState: editorStateReducer,
+  // editorState: editorStateReducer,
   userInfo: userInfoReducer,
   routing,
 });
