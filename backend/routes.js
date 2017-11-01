@@ -46,41 +46,65 @@ router.post('/register', function(req, res) {
 //   }
 // })
 
-router.get('/document/:docId', function(req, res) {
+router.post('/document/:docId', function(req, res) {
   Document.findById(req.params.docId).exec((err, doc) => {
     if (err) {
       res.json({success: false, message: err})
     } else {
-      res.json({success: true, document: doc})
+      if (doc.collaborators.indexOf(req.body.user._id) === -1) {
+        User.findById(req.body.user._id).exec((err,user) => {
+          user.docsList.push(doc._id);
+          doc.collaborators.push(req.body.user._id)
+          Promise.all([
+            user.save(),
+            doc.save()
+          ]).then(a => {
+            console.log("find doc new user:",a);
+            res.json({success: true, document: doc})
+          }).catch(err=>{
+            res.json({success: false, message: err})
+          })
+        })
+      } else {
+        res.json({success: true, document: doc})
+      }
     }
   })
 });
 
-router.post('/document/new', function(req, res) {
-  const newDoc = new Document({
-    editorState: EditorState.createEmpty(),
-    owner: req.body.user._id,
-    collaborators: [req.body.user._id],
-    name: req.body.name,
-    ts: new Date(),
-  });
-  Promise.all([
-    newDoc.save(),
-    User.findById(req.body.user._id).exec( (err,user) => {
-      user.docsList.push(newDoc._id)
-      user.save()
-    })
-  ]).then(resultArr => {
-    res.send({success:true, document: resultArr[0], user: resultArr[1]})
-  }).catch(err => {
-    res.send({success:false, message: err})
-  })
-});
+// router.post('/document/new', function(req, res) {
+//   res.json({hi:'HI'})
+//   // const newDoc = new Document({
+//   //   // owner: req.body.user._id,
+//   //   owner: '12345',
+//   //   collaborators: ['12345'],
+//   //   // collaborators: [req.body.user._id],
+//   //   name: req.body.name,
+//   //   ts: new Date(),
+//   //   editorState: EditorState.createEmpty(),
+//   // });
+//   // console.log(newDoc._id);
+//   // Promise.all([
+//   //   newDoc.save(),
+//   //   User.findById(req.body.user._id).exec( (err,user) => {
+//   //     user.docsList.push(newDoc._id)
+//   //     user.save()
+//   //   })
+//   // ]).then(resultArr => {
+//   //   res.send({success:true, document: resultArr[0], user: resultArr[1]})
+//   // }).catch(err => {
+//   //   res.send({success:false, message: err})
+//   // })
+// });
 
 router.post('/document/save/:docId', function(req, res) {
   Document.findByIdAndUpdate({
     _id: req.params.docId
-  }, {editorState: req.body.editorState})
+  }, {editorState: req.body.editorState}).then(result => {
+    res.json({success:true})
+  }).catch(err=>{
+    res.json({success:false,message:err})
+  })
 });
 
 router.get('/logout', function(req, res) {

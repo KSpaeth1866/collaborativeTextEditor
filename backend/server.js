@@ -14,11 +14,19 @@ const routes = require('./routes')
 app.use('/', routes);
 
 //SOCKET EVENTS
-io.on('connection', function(socket) {
-  socket.emit('news', {hello: 'world'});
-  socket.on('my other event', function(data) {
-    console.log(data);
-  });
+io.sockets.on('connection', function(socket) {
+    // once a client has connected, we expect to get a ping from them saying what room they want to join
+    socket.on('documentJoin', function(doc) {
+        socket.join(doc);
+    });
+    //Event for leaving document
+    socket.on('documentLeave', function(doc) {
+        socket.leave(doc);
+    });
+    //evet emmitted for every change to editor
+    socket.on('update', (data) => {
+      socket.broadcast.to(room).emit('update',data)
+    })
 });
 
 var port = process.env.PORT || 3000

@@ -17,9 +17,6 @@ var userSchema = mongoose.Schema({
 });
 
 var docsSchema = mongoose.Schema({
-  editorState: {
-    type: Object
-  },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User"
@@ -34,7 +31,10 @@ var docsSchema = mongoose.Schema({
   },
   ts: {
     type: Date
-  }
+  },
+  editorState: {
+    type: Object
+  },
 });
 //
 // docsSchema.methods.addCollaborator = function (cb){
