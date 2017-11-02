@@ -13,10 +13,6 @@ import {
   convertToRaw,
 } from 'draft-js';
 import io from 'socket.io-client';
-// import {
-//   SocketProvider,
-//   socketConnect,
-// } from 'socket.io-react';
 import Paper from 'material-ui/Paper';
 import RaisedButton from 'material-ui/RaisedButton';
 import TextField from 'material-ui/TextField'
@@ -69,12 +65,19 @@ class Draft extends React.Component {
     this.socket = io.connect(SOCKET_URL)
 
     this.socket.on('updateEditorState', (data) => {
-      console.log('client side on update editorState: ', data);
       let contentState = JSON.parse(data.contentState);
+      console.log("RANGE1", data.range);
+      console.log("RANGE2", data.rangeObj);
+      // console.log("RANGE", Object.keys(data.rangeObj));
       contentState = convertFromRaw(contentState);
       this.setState({
         editorState: EditorState.push(this.state.editorState, contentState),
       })
+
+      console.log(data.rangeObj);
+      // let range = document.createRange();
+      // range.setStart(data.rangeObj.startNode, data.rangeObj.startOffset);
+      // range.setEnd(data.rangeObj.endNode, data.rangeObj.endOffset);
     })
 
     this.socket.on('updateName', (data) => {
@@ -84,14 +87,29 @@ class Draft extends React.Component {
   }
 
   onChange(editorState) {
-    this.setState({
-      editorState,
-    })
-    let stringifiedContentState = this.createStringifiedContentStateFromEditorState(this.state.editorState)
-    this.socket.emit('changeEditorState', {
-      contentState: stringifiedContentState,
-      docId: this.state.id,
-    })
+    try {
+      // this is why it's in the try catch block
+      let selObj = window.getSelection();
+      let rangeObj = JSON.stringify(selObj.getRangeAt(0));
+      let range = selObj.getRangeAt(0);
+      console.log('range:', range);
+      console.log('endContainer:', range.endContainer);
+
+      this.setState({
+        editorState,
+      })
+
+      let stringifiedContentState = this.createStringifiedContentStateFromEditorState(editorState)
+      this.socket.emit('changeEditorState', {
+        contentState: stringifiedContentState,
+        docId: this.state.id,
+        rangeObj: rangeObj,
+        range: range,
+      })
+    }
+    catch (e) {
+      // console.log(e);
+    }
   }
 
   async componentWillMount() {
@@ -257,7 +275,7 @@ class Draft extends React.Component {
     this.setState({name: e.target.value})
     this.socket.emit('changeName', {
       docId: this.state.id,
-      name: this.state.name,
+      name: e.target.value,
     })
   }
 

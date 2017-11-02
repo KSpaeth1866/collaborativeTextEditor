@@ -40,9 +40,12 @@ io.on('connection', function(socket) {
   });
   //event emmitted for every change to editor
   socket.on('changeEditorState', (data) => {
-    console.log('changeEditorState: ', data);
+    console.log('data: ', data);
+    console.log('range obj: ', Object.keys(data.range));
     socket.broadcast.to(data.docId).emit('updateEditorState', {
       contentState: data.contentState,
+      rangeObj: data.rangeObj,
+      range: data.range,
     })
   })
 
