@@ -67,25 +67,38 @@ class Draft extends React.Component {
     });
     this.extendedBlockRenderMap = DefaultDraftBlockRenderMap.merge(blockRenderMap);
     this.socket = io.connect(SOCKET_URL)
+
+    this.socket.on('updateEditorState', (data) => {
+      console.log('client side on update editorState: ', data);
+      let contentState = JSON.parse(data.contentState);
+      contentState = convertFromRaw(contentState);
+      this.setState({
+        editorState: EditorState.push(this.state.editorState, contentState),
+      })
+    })
+
+    this.socket.on('updateName', (data) => {
+      console.log('client side on update name: ', data);
+      this.setState({name: data.name})
+    })
   }
 
-  // _handleKeyCommand(command, editorState) {
-  //   const newState = RichUtils.handleKeyCommand(editorState, command);
-  //   if (newState) {
-  //     this.onChange(newState);
-  //     return true;
-  //   }
-  //   return false;
-  // }
+  onChange(editorState) {
+    this.setState({
+      editorState,
+    })
+    let stringifiedContentState = this.createStringifiedContentStateFromEditorState(this.state.editorState)
+    this.socket.emit('changeEditorState', {
+      contentState: stringifiedContentState,
+      docId: this.state.id,
+    })
+  }
 
   async componentWillMount() {
     let id = this.props.match.params.id;
     try {
       let doc = await axios.get(SERVER_URL + '/document/get/' + id)
-      let contentState = doc.data.document.contentState;
-      contentState = JSON.parse(contentState);
-      contentState = convertFromRaw(contentState);
-      let editorState = EditorState.createWithContent(contentState)
+      let editorState = this.createEditorStateFromStringifiedContentState(doc.data.document.contentState);
 
       this.setState({
         editorState,
@@ -96,10 +109,30 @@ class Draft extends React.Component {
         id: doc.data.document._id,
         shareOpen: false,
       })
+
+      this.socket.emit('documentJoin', this.state.id)
     }
     catch(e) {
       console.log(e);
     }
+  }
+
+  createEditorStateFromStringifiedContentState(stringifiedContentState) {
+    let contentState = JSON.parse(stringifiedContentState);
+    contentState = convertFromRaw(contentState);
+    let editorState = EditorState.createWithContent(contentState)
+    return editorState
+  }
+
+  createStringifiedContentStateFromEditorState(editorState) {
+    let contentState = editorState.getCurrentContent();
+    contentState = convertToRaw(contentState);
+    let stringifiedContentState = JSON.stringify(contentState)
+    return stringifiedContentState
+  }
+
+  componentWillUnmount() {
+    this.socket.emit('documentLeave', this.state.id)
   }
 
   handleOpen() {
@@ -122,11 +155,9 @@ class Draft extends React.Component {
 
   async onClickSave() {
     try {
-      let contentState = this.state.editorState.getCurrentContent();
-      contentState = convertToRaw(contentState);
-      contentState = JSON.stringify(contentState)
+      let stringifiedContentState = this.createStringifiedContentStateFromEditorState(this.state.editorState);
       let resp = await axios.post(SERVER_URL + '/document/save/' + this.props.match.params.id, {
-        contentState,
+        contentState: stringifiedContentState,
         name: this.state.name,
       })
       resp.data.success ? console.log('saved') : console.log('not saved')
@@ -142,13 +173,6 @@ class Draft extends React.Component {
       withCredentials: true,
     })
     this.props.onRefresh(newUserInfo.data.user)
-  }
-
-  onChange(editorState) {
-    this.setState({
-      editorState,
-    })
-    // this.socket.emit('change', editorState)
   }
 
   focus() {
@@ -207,6 +231,15 @@ class Draft extends React.Component {
     this.onChange(nextEditorState);
   }
 
+  // _handleKeyCommand(command, editorState) {
+  //   const newState = RichUtils.handleKeyCommand(editorState, command);
+  //   if (newState) {
+  //     this.onChange(newState);
+  //     return true;
+  //   }
+  //   return false;
+  // }
+
   myBlockStyleFn(contentBlock) {
     const type = contentBlock.getType();
     switch (type) {
@@ -217,6 +250,15 @@ class Draft extends React.Component {
       case 'left':
           return 'left';
     }
+  }
+
+  setName(e) {
+    e.preventDefault();
+    this.setState({name: e.target.value})
+    this.socket.emit('changeName', {
+      docId: this.state.id,
+      name: this.state.name,
+    })
   }
 
   render() {
@@ -245,7 +287,7 @@ class Draft extends React.Component {
           id={'this-makes-a-warning-shut-up'}
           style={styles.draftHeader}
           value={this.state.name}
-          onChange={(e) => this.setState({name: e.target.value})}
+          onChange={(e) => this.setName(e)}
         />
         <br />
         <div style={styles.draftButtonContainer}>
