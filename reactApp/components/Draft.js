@@ -19,7 +19,6 @@ import TextField from 'material-ui/TextField'
 import Dialog from 'material-ui/Dialog';
 import { Map } from 'immutable';
 
-
 // css styles
 import styles from '../assets/styles'
 import colorStyleMap from '../assets/colors'
@@ -66,18 +65,34 @@ class Draft extends React.Component {
 
     this.socket.on('updateEditorState', (data) => {
       let contentState = JSON.parse(data.contentState);
-      console.log("RANGE1", data.range);
-      console.log("RANGE2", data.rangeObj);
-      // console.log("RANGE", Object.keys(data.rangeObj));
       contentState = convertFromRaw(contentState);
-      this.setState({
-        editorState: EditorState.push(this.state.editorState, contentState),
-      })
 
-      console.log(data.rangeObj);
-      // let range = document.createRange();
-      // range.setStart(data.rangeObj.startNode, data.rangeObj.startOffset);
-      // range.setEnd(data.rangeObj.endNode, data.rangeObj.endOffset);
+      let currentSelectionState = this.state.editorState.getSelection();
+      let newSelectionState = currentSelectionState.merge(data.selObj)
+      let newEditorState = EditorState.push(this.state.editorState, contentState)
+      let editorState = EditorState.forceSelection(newEditorState, currentSelectionState);
+
+      let startKey = newSelectionState.getStartKey();
+      let endKey = newSelectionState.getEndKey();
+      let startOffset = newSelectionState.getStartOffset();
+      let endOffset = newSelectionState.getEndOffset();
+
+      console.log('newSelectionState: ', newSelectionState);
+
+      // cursor
+      editorState = EditorState.forceSelection(newEditorState, currentSelectionState);
+
+      // highlight
+      newEditorState = EditorState.forceSelection(newEditorState, newSelectionState);
+      newEditorState = RichUtils.toggleInlineStyle(
+        newEditorState,
+        'highlightRed'
+      );
+      editorState = EditorState.forceSelection(newEditorState, currentSelectionState);
+
+      this.setState({
+        editorState,
+      })
     })
 
     this.socket.on('updateName', (data) => {
@@ -87,29 +102,21 @@ class Draft extends React.Component {
   }
 
   onChange(editorState) {
-    try {
-      // this is why it's in the try catch block
-      let selObj = window.getSelection();
-      let rangeObj = JSON.stringify(selObj.getRangeAt(0));
-      let range = selObj.getRangeAt(0);
-      console.log('range:', range);
-      console.log('endContainer:', range.endContainer);
 
-      this.setState({
-        editorState,
-      })
+    let selObj = editorState.getSelection();
+    console.log(selObj);
 
-      let stringifiedContentState = this.createStringifiedContentStateFromEditorState(editorState)
-      this.socket.emit('changeEditorState', {
-        contentState: stringifiedContentState,
-        docId: this.state.id,
-        rangeObj: rangeObj,
-        range: range,
-      })
-    }
-    catch (e) {
-      // console.log(e);
-    }
+    this.setState({
+      editorState,
+    })
+
+    let stringifiedContentState = this.createStringifiedContentStateFromEditorState(editorState)
+    this.socket.emit('changeEditorState', {
+      contentState: stringifiedContentState,
+      docId: this.state.id,
+      selObj,
+    })
+
   }
 
   async componentWillMount() {
@@ -183,7 +190,6 @@ class Draft extends React.Component {
     catch(e) {
       console.log(e);
     }
-
   }
 
   async onBackToDocs() {
