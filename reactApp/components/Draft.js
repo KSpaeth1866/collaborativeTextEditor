@@ -12,11 +12,17 @@ import {
   convertFromRaw,
   convertToRaw,
 } from 'draft-js';
+import io from 'socket.io-client';
+// import {
+//   SocketProvider,
+//   socketConnect,
+// } from 'socket.io-react';
 import Paper from 'material-ui/Paper';
 import RaisedButton from 'material-ui/RaisedButton';
 import TextField from 'material-ui/TextField'
 import Dialog from 'material-ui/Dialog';
 import { Map } from 'immutable';
+
 
 // css styles
 import styles from '../assets/styles'
@@ -60,6 +66,7 @@ class Draft extends React.Component {
       }
     });
     this.extendedBlockRenderMap = DefaultDraftBlockRenderMap.merge(blockRenderMap);
+    this.socket = io.connect(SOCKET_URL)
   }
 
   // _handleKeyCommand(command, editorState) {
@@ -141,6 +148,7 @@ class Draft extends React.Component {
     this.setState({
       editorState,
     })
+    // this.socket.emit('change', editorState)
   }
 
   focus() {
@@ -213,7 +221,11 @@ class Draft extends React.Component {
 
   render() {
     return (
-      <div className={'RichEditor-root'}>
+      <Paper
+        className={'RichEditor-root'}
+        style={styles.draftBody}
+        zDepth={2}
+        >
         <Dialog
           title="Share this ID to share this Doc"
           actions={
@@ -225,21 +237,46 @@ class Draft extends React.Component {
           }
           modal={false}
           open={this.state.shareOpen}
-          onRequestClose={this.handleClose}
+          onRequestClose={() => this.handleClose()}
         >
           {this.state.id}
         </Dialog>
         <TextField
           id={'this-makes-a-warning-shut-up'}
-          style={styles.header}
+          style={styles.draftHeader}
           value={this.state.name}
           onChange={(e) => this.setState({name: e.target.value})}
         />
         <br />
-        <Paper
-          style={styles.controlContainer}
-          zDepth={2}
-          >
+        <div style={styles.draftButtonContainer}>
+          <RaisedButton
+            primary={true}
+            onClick={() => this.handleOpen()}
+            label={'Share'}
+            style={styles.draftButton}
+          />
+          <div style={styles.draftSpacer}></div>
+          <RaisedButton
+            primary={true}
+            onClick={() => this.onClickSave()}
+            label={'Save'}
+            style={styles.draftButton}
+          />
+          <div style={styles.draftSpacer}></div>
+          <Link
+            to='/'
+            style={styles.draftButton}
+            >
+            <RaisedButton
+              primary={true}
+              fullWidth={true}
+              onClick={() => this.onBackToDocs()}
+              label={'Back to Docs'}
+            />
+          </Link>
+        </div>
+        <br />
+        <div style={styles.controlContainer}>
           <BlockStyleControls
             editorState={this.state.editorState}
             onToggle={(style) => this._toggleBlockType(style)}
@@ -252,11 +289,11 @@ class Draft extends React.Component {
             editorState={this.state.editorState}
             onToggle={(style) => this._toggleColor(style)}
           />
-        </Paper>
+        </div>
         <br />
         <Paper
           style={styles.editor}
-          zDepth={2}
+          zDepth={1}
           onClick={() => this.focus()}
           >
           <Editor
@@ -272,31 +309,18 @@ class Draft extends React.Component {
         </Paper>
         <br />
         <br />
-        <RaisedButton
-          primary={true}
-          onClick={() => this.onClickSave()}
-          label={'Save'}
-        />
-        <RaisedButton
-          primary={true}
-          onClick={() => this.handleOpen()}
-          label={'Share'}
-        />
-        <Link to='/'>
-          <RaisedButton
-            primary={true}
-            onClick={() => this.onBackToDocs()}
-            label={'Back to Docs'}
-          />
-        </Link>
-        <Link to='/'>
-          <RaisedButton
-            primary={true}
-            onClick={() => this.onClickLogout()}
-            label={'Logout'}
-          />
-        </Link>
-      </div>
+        <div style={styles.logoutContainer}>
+          <div style={styles.logoutSpacer}></div>
+            <Link to='/'>
+              <RaisedButton
+                style={styles.logoutBtn}
+                primary={true}
+                onClick={() => this.onClickLogout()}
+                label={'Logout'}
+              />
+            </Link>
+        </div>
+      </Paper>
       );
     }
   };

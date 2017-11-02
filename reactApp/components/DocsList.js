@@ -19,6 +19,7 @@ import ActionInfo from 'material-ui/svg-icons/action/info';
 import Subheader from 'material-ui/Subheader';
 import {blue500, yellow600} from 'material-ui/styles/colors';
 import RaisedButton from 'material-ui/RaisedButton';
+import FlatButton from 'material-ui/FlatButton';
 import Divider from 'material-ui/Divider';
 import TextField from 'material-ui/TextField'
 import Dialog from 'material-ui/Dialog';
@@ -43,6 +44,22 @@ class DocsList extends React.Component {
     }
   }
 
+  handleOpenAdd() {
+    this.setState({addOpen: true});
+  };
+
+  handleCloseAdd() {
+    this.setState({addOpen: false});
+  };
+
+  handleOpenCreate() {
+    this.setState({createOpen: true});
+  };
+
+  handleCloseCreate() {
+    this.setState({createOpen: false});
+  };
+
   async onClickLogout() {
     try {
       let logout = await axios.get(SERVER_URL + '/logout')
@@ -54,20 +71,16 @@ class DocsList extends React.Component {
   }
 
   async onClickAdd() {
-    console.log('add');
     if (this.state.addDocId === '') return
-
     try {
-      console.log(this.state.addDocId);
       let resp = await axios.get(SERVER_URL + '/document/add/' + this.state.addDocId)
-      console.log(resp);
+      this.setState({addOpen: false})
       if (resp.data.success) {
         let newUserInfo = await axios.get(SERVER_URL + '/document/list', {
           withCredentials: true,
         })
         this.props.onRefresh(newUserInfo.data.user)
       }
-
     }
     catch (e) {
       console.log(e);
@@ -76,24 +89,21 @@ class DocsList extends React.Component {
 
   async onClickCreate() {
     if (this.state.newDocName === '') return
-
     let editorState = EditorState.createEmpty();
     let contentState = convertToRaw(editorState.getCurrentContent());
     contentState = JSON.stringify(contentState);
-
     try {
-
       let resp = await axios.post(SERVER_URL + '/document/new', {
         name: this.state.newDocName,
         contentState,
       })
+      this.setState({createOpen: false})
       if (resp.data.success) {
         let newUserInfo = await axios.get(SERVER_URL + '/document/list', {
           withCredentials: true,
         })
         this.props.onRefresh(newUserInfo.data.user)
       }
-
     }
     catch (e) {
       console.log(e);
@@ -118,6 +128,52 @@ class DocsList extends React.Component {
   render() {
     return (
       <div>
+        <Dialog
+          title="Create New Doc"
+          actions={[
+            <FlatButton
+              label="Create"
+              onClick={() => this.onClickCreate()}
+            />,
+            <FlatButton
+              label="Close"
+              onClick={() => this.handleCloseCreate()}
+            />]
+          }
+          modal={false}
+          open={this.state.createOpen}
+          onRequestClose={() => this.handleCloseCreate()}
+          >
+            <TextField
+              style={styles.newDocInputText}
+              floatingLabelText="New Document Name"
+              value={this.state.newDocName}
+              onChange={(e) => this.setState({newDocName: e.target.value})}
+            />
+        </Dialog>
+        <Dialog
+          title="Add Doc By ID"
+          actions={[
+            <FlatButton
+              label="Add"
+              onClick={() => this.onClickAdd()}
+            />,
+            <FlatButton
+              label="Close"
+              onClick={() => this.handleCloseAdd()}
+            />]
+          }
+          modal={false}
+          open={this.state.addOpen}
+          onRequestClose={() => this.handleCloseAdd()}
+          >
+          <TextField
+            style={styles.newDocInputText}
+            floatingLabelText="Existing Document ID"
+            value={this.state.addDocId}
+            onChange={(e) => this.setState({addDocId: e.target.value})}
+          />
+        </Dialog>
         <Paper
           zDepth={2}
           style={styles.docsListBody}
@@ -126,36 +182,23 @@ class DocsList extends React.Component {
             style={styles.docsListHeader}>
             Welcome to your docs, {this.props.userInfo.user.username}
           </div>
+          <br />
+          <br />
           <div
-            style={styles.newDocInput}
+            style={styles.newDocInputBtnContainer}
             >
-            <TextField
-              style={styles.newDocInputText}
-              floatingLabelText="New Document"
-              hintText="name"
-              onChange={(e) => this.setState({newDocName: e.target.value})}
-            />
             <RaisedButton
               style={styles.newDocInputBtn}
               primary={true}
-              onClick={() => this.onClickCreate()}
-              label={'Create'}
+              onClick={() => this.handleOpenCreate()}
+              label={'Create New Doc'}
             />
-          </div>
-          <div
-            style={styles.newDocInput}
-            >
-            <TextField
-              style={styles.newDocInputText}
-              floatingLabelText="Add By ID"
-              hintText="document ID"
-              onChange={(e) => this.setState({addDocId: e.target.value})}
-            />
+            <div style={styles.newDocInputSpacer}></div>
             <RaisedButton
               style={styles.newDocInputBtn}
               primary={true}
-              onClick={() => this.onClickAdd()}
-              label={'Add'}
+              onClick={() => this.handleOpenAdd()}
+              label={'Add Existing Doc'}
             />
           </div>
           <br />
@@ -191,11 +234,15 @@ class DocsList extends React.Component {
           </List>
           <br />
           <br />
-          <RaisedButton
-            primary={true}
-            onClick={() => this.onClickLogout()}
-            label={'Logout'}
-          />
+          <div style={styles.logoutContainer}>
+            <div style={styles.logoutSpacer}></div>
+            <RaisedButton
+              style={styles.logoutBtn}
+              primary={true}
+              onClick={() => this.onClickLogout()}
+              label={'Logout'}
+            />
+          </div>
         </Paper>
       </div>
     );

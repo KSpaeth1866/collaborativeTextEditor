@@ -26,7 +26,8 @@ app.use('/', routes);
 //SOCKET EVENTS
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
-io.sockets.on('connection', function(socket) {
+io.on('connection', function(socket) {
+  console.log('connected');
   // once a client has connected, we expect to get a ping from them saying what room they want to join
   socket.on('documentJoin', function(doc) {
     socket.join(doc);
