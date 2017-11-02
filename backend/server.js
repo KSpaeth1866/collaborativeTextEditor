@@ -29,16 +29,28 @@ const io = require('socket.io')(server);
 io.on('connection', function(socket) {
   console.log('connected');
   // once a client has connected, we expect to get a ping from them saying what room they want to join
-  socket.on('documentJoin', function(doc) {
-    socket.join(doc);
+  socket.on('documentJoin', function(docId) {
+    console.log('socket documentJoin: ', docId);
+    socket.join(docId);
   });
-  //Event for leaving document
-  socket.on('documentLeave', function(doc) {
-    socket.leave(doc);
+  // event for leaving document
+  socket.on('documentLeave', function(docId) {
+    console.log('socket documentLeave: ', docId);
+    socket.leave(docId);
   });
-  //evet emmitted for every change to editor
-  socket.on('update', (data) => {
-    socket.broadcast.to(room).emit('update', data)
+  //event emmitted for every change to editor
+  socket.on('changeEditorState', (data) => {
+    console.log('changeEditorState: ', data);
+    socket.broadcast.to(data.docId).emit('updateEditorState', {
+      contentState: data.contentState,
+    })
+  })
+
+  socket.on('changeName', (data) => {
+    console.log('changeName: ', data);
+    socket.broadcast.to(data.docId).emit('updateName', {
+      name: data.name,
+    })
   })
 });
 //Listen
