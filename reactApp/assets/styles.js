@@ -3,8 +3,8 @@ const styles = {
     fontFamily: '\'Helvetica\', sans-serif',
     cursor: 'text',
     minHeight: 200,
-    padding: 10,
-    margin: 15,
+    padding: 20,
+    // margin: 15,
   },
   header: {
     textAlign: 'center',
@@ -12,6 +12,9 @@ const styles = {
     padding: 10,
     margin: 15,
     fontFamily: '\'Helvetica\', sans-serif',
+  },
+  draftHeader: {
+    fontSize: 30,
   },
   authHeader: {
     fontSize: 30,
@@ -51,10 +54,25 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'baseline',
   },
+  newDocInputBtnContainer: {
+    display: 'flex',
+  },
   newDocInputBtn: {
-    flex: 1,
+    flex: 5,
+  },
+  newDocInputSpacer: {
+    flex: 2,
   },
   newDocInputText: {
+    // flex: 3,
+  },
+  logoutContainer: {
+    display: 'flex',
+  },
+  logoutBtn: {
+    flex: 1,
+  },
+  logoutSpacer: {
     flex: 3,
   },
   docsListBody: {
@@ -65,12 +83,28 @@ const styles = {
     padding: 50,
     margin: 50,
   },
+  draftBody: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    padding: 50,
+    margin: 50,
+  },
   pageContainer: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     padding: 20,
     margin: 10,
+  },
+  draftButtonContainer: {
+    display: 'flex',
+  },
+  draftButton: {
+    flex: 2,
+  },
+  draftSpacer: {
+    flex: 1,
   },
 };
 

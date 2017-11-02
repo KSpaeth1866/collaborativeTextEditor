@@ -14,13 +14,13 @@ const BLOCK_TYPES = [
   {label: 'H4', style: 'header-four'},
   {label: 'H5', style: 'header-five'},
   {label: 'H6', style: 'header-six'},
-  {label: 'Blockquote', style: 'blockquote'},
-  {label: 'UL', style: 'unordered-list-item'},
-  {label: 'OL', style: 'ordered-list-item'},
-  {label: 'Code Block', style: 'code-block'},
-  {label: 'Align Left', style: 'left'},
-  {label: 'Align Center', style: 'center'},
-  {label: 'Align Right', style: 'right'},
+  {label: 'Blockquote', style: 'blockquote', icon: 'format_indent_increase'},
+  {label: 'UL', style: 'unordered-list-item', icon: 'format_list_bulleted'},
+  {label: 'OL', style: 'ordered-list-item', icon: 'format_list_numbered'},
+  // {label: 'Code Block', style: 'code-block'},
+  {label: 'Align Left', style: 'left', icon: 'format_align_left'},
+  {label: 'Align Center', style: 'center', icon: 'format_align_center'},
+  {label: 'Align Right', style: 'right', icon: 'format_align_right'},
 ];
 
 class BlockStyleControls extends React.Component{
@@ -48,6 +48,7 @@ class BlockStyleControls extends React.Component{
             label={type.label}
             onToggle={(style) => this.props.onToggle(style)}
             style={type.style}
+            icon={type.icon}
           />
         )}
       </div>

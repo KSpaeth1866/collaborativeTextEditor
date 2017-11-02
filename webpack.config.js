@@ -23,6 +23,9 @@ module.exports = {
   plugins: [
     new webpack.DefinePlugin({
       'SERVER_URL': JSON.stringify(process.env.SERVER_URL)
+    }),
+    new webpack.DefinePlugin({
+      'SOCKET_URL': JSON.stringify(process.env.SOCKET_URL)
     })
   ],
   stats: {

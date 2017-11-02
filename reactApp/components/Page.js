@@ -7,6 +7,7 @@ import {
   Switch,
   Link,
 } from 'react-router-dom';
+import AppBar from 'material-ui/AppBar';
 
 // css styles
 import styles from '../assets/styles'
@@ -28,20 +29,21 @@ class Page extends React.Component {
   render() {
     return (
       <div style={styles.pageContainer}>
-          <HashRouter>
-            <Switch>
-              <Route exact path='/' component={
-                this.props.userInfo.loggedIn
-                ?
-                DocsList
-                :
-                Login
-              }
-              />
-              <Route path='/register' component={Register} />
-              <Route path='/document/:id' component={Draft} />
-            </Switch>
-          </HashRouter>
+        <AppBar title="Docs" />
+        <HashRouter>
+          <Switch>
+            <Route exact path='/' component={
+              this.props.userInfo.loggedIn
+              ?
+              DocsList
+              :
+              Login
+            }
+            />
+            <Route path='/register' component={Register} />
+            <Route path='/document/:id' component={Draft} />
+          </Switch>
+        </HashRouter>
       </div>
     );
   }

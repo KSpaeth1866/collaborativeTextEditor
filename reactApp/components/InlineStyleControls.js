@@ -9,29 +9,28 @@ import StyleButton from './StyleButton';
 
 
 var INLINE_STYLES = [
-  {label: 'Bold', style: 'BOLD'},
-  {label: 'Italic', style: 'ITALIC'},
-  {label: 'Underline', style: 'UNDERLINE'},
-  {label: 'Monospace', style: 'CODE'},
+  {label: 'Bold', style: 'BOLD', icon: 'format_bold'},
+  {label: 'Italic', style: 'ITALIC', icon: 'format_italic'},
+  {label: 'Underline', style: 'UNDERLINE', icon: 'format_underline'},
+  {label: 'Monospace', style: 'CODE', icon: 'code'},
 ];
 
 class InlineStyleControls extends React.Component {
   constructor(props) {
     super(props)
-    this.currentStyle = this.props.editorState.getCurrentInlineStyle();
   }
 
   render() {
-    this.currentStyle = this.props.editorState.getCurrentInlineStyle();
     return (
       <div className="RichEditor-controls">
         {INLINE_STYLES.map(type =>
           <StyleButton
             key={type.label}
-            active={this.currentStyle.has(type.style)}
+            active={this.props.editorState.getCurrentInlineStyle().has(type.style)}
             label={type.label}
             onToggle={(style) => this.props.onToggle(style)}
             style={type.style}
+            icon={type.icon}
           />
         )}
       </div>
