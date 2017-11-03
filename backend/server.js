@@ -26,33 +26,42 @@ app.use('/', routes);
 //SOCKET EVENTS
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
+
 io.on('connection', function(socket) {
-  console.log('connected');
-  // once a client has connected, we expect to get a ping from them saying what room they want to join
-  socket.on('documentJoin', function(docId) {
-    console.log('socket documentJoin: ', docId);
-    socket.join(docId);
+  socket.on('documentJoin', (data) => {
+    socket.join(data.docId);
   });
-  // event for leaving document
-  socket.on('documentLeave', function(docId) {
-    console.log('socket documentLeave: ', docId);
-    socket.leave(docId);
+
+  socket.on('documentLeave', (data) => {
+    socket.broadcast.to(data.docId).emit('userLeave', {
+      color: data.color,
+    })
+    socket.leave(data.docId);
   });
-  //event emmitted for every change to editor
+
   socket.on('changeEditorState', (data) => {
-    console.log('changeEditorState: ', data);
     socket.broadcast.to(data.docId).emit('updateEditorState', {
       contentState: data.contentState,
+      selectionState: data.selectionState,
+      color: data.color,
+      username: data.username,
     })
   })
 
   socket.on('changeName', (data) => {
-    console.log('changeName: ', data);
     socket.broadcast.to(data.docId).emit('updateName', {
       name: data.name,
     })
   })
+
+  socket.on('cursor', (data) => {
+    console.log('cursor: ', data);
+    socket.broadcast.to(data.docId).emit('updateCursor', {
+      loc: data.loc,
+    })
+  })
 });
+
 //Listen
 var port = process.env.PORT || 3000
 server.listen(port, function() {

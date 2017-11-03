@@ -13,16 +13,11 @@ import {
   convertToRaw,
 } from 'draft-js';
 import io from 'socket.io-client';
-// import {
-//   SocketProvider,
-//   socketConnect,
-// } from 'socket.io-react';
 import Paper from 'material-ui/Paper';
 import RaisedButton from 'material-ui/RaisedButton';
 import TextField from 'material-ui/TextField'
 import Dialog from 'material-ui/Dialog';
 import { Map } from 'immutable';
-
 
 // css styles
 import styles from '../assets/styles'
@@ -32,6 +27,7 @@ import colorStyleMap from '../assets/colors'
 import BlockStyleControls from './BlockStyleControls';
 import InlineStyleControls from './InlineStyleControls';
 import ColorControls from './ColorControls';
+import Cursor from './Cursor';
 
 // dispatch actions
 import {
@@ -53,6 +49,9 @@ class Draft extends React.Component {
       ts: '',
       id: '',
       shareOpen: false,
+      otherUsers: {},
+      cursorLocation: {},
+      color: '',
     }
     const blockRenderMap = Map({
       'right': {
@@ -69,17 +68,73 @@ class Draft extends React.Component {
     this.socket = io.connect(SOCKET_URL)
 
     this.socket.on('updateEditorState', (data) => {
-      console.log('client side on update editorState: ', data);
+      // gets new regular editor state
       let contentState = JSON.parse(data.contentState);
       contentState = convertFromRaw(contentState);
+      let editorState = EditorState.push(this.state.editorState, contentState);
+
+      // gets selections states
+      let currentSelectionState = editorState.getSelection();
+      let otherSelectionState = currentSelectionState.merge(data.selectionState);
+
+      // force other selection state
+      editorState = EditorState.forceSelection(editorState, otherSelectionState);
+      this.setState({editorState,})
+
+      let startKey = otherSelectionState.getStartKey();
+      let endKey = otherSelectionState.getEndKey();
+      let startOffset = otherSelectionState.getStartOffset();
+      let endOffset = otherSelectionState.getEndOffset();
+
+      const windowSelectionState = document.getSelection();
+      if (windowSelectionState.rangeCount > 0) {
+        const range = windowSelectionState.getRangeAt(0);
+        const clientRects = range.getClientRects();
+        console.log(clientRects);
+        const rects = clientRects[0];
+        let cursorLocation = {
+          top: rects.top,
+          left: rects.left,
+          height: rects.height,
+        }
+        let highlights = [];
+        for (var i = 0; i < clientRects.length; i++) {
+          let highlightLocation = {
+            top: clientRects[i].top,
+            bottom: clientRects[i].bottom,
+            right: clientRects[i].right,
+            left: clientRects[i].left,
+            height: clientRects[i].height,
+            width: clientRects[i].width,
+          }
+          highlights.push(highlightLocation)
+        }
+        let tempOtherUsers = JSON.parse(JSON.stringify(this.state.otherUsers))
+        tempOtherUsers[data.color] = {
+          username: data.username,
+          color: data.color,
+          cursorLocation,
+          highlights,
+        }
+        this.setState({otherUsers: tempOtherUsers,})
+      }
+
+      editorState = EditorState.forceSelection(editorState, currentSelectionState);
+
       this.setState({
-        editorState: EditorState.push(this.state.editorState, contentState),
+        editorState,
       })
+
     })
 
     this.socket.on('updateName', (data) => {
-      console.log('client side on update name: ', data);
       this.setState({name: data.name})
+    })
+
+    this.socket.on('userLeave', (data) => {
+      let tempOtherUsers = JSON.parse(JSON.stringify(this.state.otherUsers))
+      delete tempOtherUsers[data.color];
+      this.setState({otherUsers: tempOtherUsers,})
     })
   }
 
@@ -87,11 +142,18 @@ class Draft extends React.Component {
     this.setState({
       editorState,
     })
-    let stringifiedContentState = this.createStringifiedContentStateFromEditorState(this.state.editorState)
+
+    let stringifiedContentState = this.createStringifiedContentStateFromEditorState(editorState)
+
     this.socket.emit('changeEditorState', {
-      contentState: stringifiedContentState,
       docId: this.state.id,
+      contentState: stringifiedContentState,
+      selectionState: editorState.getSelection(),
+      color: this.state.color,
+      username: 'bob',
+      // username: this.props.userInfo.user.username,
     })
+
   }
 
   async componentWillMount() {
@@ -108,13 +170,23 @@ class Draft extends React.Component {
         ts: doc.data.document.ts,
         id: doc.data.document._id,
         shareOpen: false,
+        color: '#'+Math.floor(Math.random()*16777215).toString(16),
       })
 
-      this.socket.emit('documentJoin', this.state.id)
+      this.socket.emit('documentJoin', {
+        docId: this.state.id,
+      })
     }
     catch(e) {
       console.log(e);
     }
+  }
+
+  componentWillUnmount() {
+    this.socket.emit('documentLeave', {
+      docId: this.state.id,
+      color: this.state.color,
+    })
   }
 
   createEditorStateFromStringifiedContentState(stringifiedContentState) {
@@ -131,17 +203,8 @@ class Draft extends React.Component {
     return stringifiedContentState
   }
 
-  componentWillUnmount() {
-    this.socket.emit('documentLeave', this.state.id)
-  }
-
-  handleOpen() {
-    this.setState({shareOpen: true});
-  };
-
-  handleClose() {
-    this.setState({shareOpen: false});
-  };
+  handleOpen() {this.setState({shareOpen: true})};
+  handleClose() {this.setState({shareOpen: false})};
 
   async onClickLogout() {
     try {
@@ -165,7 +228,6 @@ class Draft extends React.Component {
     catch(e) {
       console.log(e);
     }
-
   }
 
   async onBackToDocs() {
@@ -180,10 +242,11 @@ class Draft extends React.Component {
   }
 
   _onTab(e) {
-    e.preventDefault;
+    e.preventDefault();
     const maxDepth = 4;
     this.onChange(
       RichUtils.onTab(
+        e,
         this.state.editorState,
         maxDepth));
   }
@@ -257,7 +320,7 @@ class Draft extends React.Component {
     this.setState({name: e.target.value})
     this.socket.emit('changeName', {
       docId: this.state.id,
-      name: this.state.name,
+      name: e.target.value,
     })
   }
 
@@ -338,6 +401,12 @@ class Draft extends React.Component {
           zDepth={1}
           onClick={() => this.focus()}
           >
+          {Object.keys(this.state.otherUsers).map(user =>
+            <Cursor
+              key={user}
+              user={this.state.otherUsers[user]}
+            />
+          )}
           <Editor
             editorState={this.state.editorState}
             customStyleMap={colorStyleMap}

@@ -19,7 +19,7 @@ const colorStyleMap = {
   },
   violet: {
     color: 'rgba(127, 0, 255, 1.0)'
-  }
+  },
 };
 
 export default colorStyleMap;
