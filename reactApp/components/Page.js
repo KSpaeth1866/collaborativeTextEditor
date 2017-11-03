@@ -28,7 +28,9 @@ import {
 class Page extends React.Component {
   render() {
     return (
-      <div style={styles.pageContainer}>
+      <div
+        style={styles.pageContainer}
+        >
         <AppBar title="Docs" />
         <HashRouter>
           <Switch>

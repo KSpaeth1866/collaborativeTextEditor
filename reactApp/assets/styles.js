@@ -94,8 +94,6 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    padding: 20,
-    margin: 10,
   },
   draftButtonContainer: {
     display: 'flex',
