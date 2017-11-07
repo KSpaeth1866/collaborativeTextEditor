@@ -11,17 +11,7 @@ import styles from '../assets/styles'
 // imported components
 import StyleButton from './StyleButton';
 
-var COLORS = [
-  // {label: 'Red', style: 'red'},
-  // {label: 'Orange', style: 'orange'},
-  // {label: 'Yellow', style: 'yellow'},
-  // {label: 'Green', style: 'green'},
-  // {label: 'Blue', style: 'blue'},
-  // {label: 'Indigo', style: 'indigo'},
-  // {label: 'Violet', style: 'violet'},
-];
-
-class ColorControls extends React.Component {
+class ColorButton extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -46,6 +36,7 @@ class ColorControls extends React.Component {
     return (
       <div style={styles.controls}>
         <RaisedButton
+          style={styles.toolbarButton}
           icon={<FontIcon className="material-icons">format_paint</FontIcon>}
           onMouseDown={(e) => this.openColorPicker(e)}
           >
@@ -57,7 +48,7 @@ class ColorControls extends React.Component {
             onRequestClose={() => this.closeColorPicker()}
             >
             <GithubPicker
-              onChangeComplete={(color) => this.props.onToggle(color.hex)}
+              onChangeComplete={(color) => this.props.onToggle(null, color.hex)}
             />
           </Popover>
         </RaisedButton>
@@ -66,4 +57,4 @@ class ColorControls extends React.Component {
   }
 };
 
-export default ColorControls
+export default ColorButton

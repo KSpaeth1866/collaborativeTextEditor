@@ -4,7 +4,6 @@ const styles = {
     cursor: 'text',
     minHeight: 200,
     padding: 20,
-    // margin: 15,
   },
   header: {
     textAlign: 'center',
@@ -87,13 +86,14 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'stretch',
-    padding: 50,
     margin: 50,
+    backgroundColor: '#eeeeee',
   },
   pageContainer: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+    backgroundColor: '#eeeeee',
   },
   draftButtonContainer: {
     display: 'flex',
@@ -103,6 +103,16 @@ const styles = {
   },
   draftSpacer: {
     flex: 1,
+  },
+  toolbar: {
+    border: '1px solid black',
+    // display: 'flex',
+  },
+  toolbarButton: {
+    margin: 2,
+    // flex: 1,
+    width: '5%',
+    // height: '25px',
   },
 };
 

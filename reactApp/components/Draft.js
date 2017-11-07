@@ -21,12 +21,10 @@ import { Map } from 'immutable';
 
 // css styles
 import styles from '../assets/styles'
-import colorStyleMap from '../assets/colors'
+import customStyleMap from '../assets/customStyleMap'
 
 // imported components
-import BlockStyleControls from './BlockStyleControls';
-import InlineStyleControls from './InlineStyleControls';
-import ColorControls from './ColorControls';
+import StyleToolbar from './StyleToolbar';
 import Cursor from './Cursor';
 
 // dispatch actions
@@ -50,21 +48,22 @@ class Draft extends React.Component {
       id: '',
       shareOpen: false,
       otherUsers: {},
-      cursorLocation: {},
       color: '',
     }
-    const blockRenderMap = Map({
-      'right': {
-        element: 'div'
-      },
-      'center': {
-        element: 'div'
-      },
-      'left': {
-        element: 'div'
-      }
-    });
-    this.extendedBlockRenderMap = DefaultDraftBlockRenderMap.merge(blockRenderMap);
+
+    this.extendedBlockRenderMap = DefaultDraftBlockRenderMap.merge(new Map({
+        'right': {
+          element: 'div'
+        },
+        'center': {
+          element: 'div'
+        },
+        'left': {
+          element: 'div'
+        }
+      })
+    );
+
     this.socket = io.connect(SOCKET_URL)
 
     this.socket.on('updateEditorState', (data) => {
@@ -86,11 +85,10 @@ class Draft extends React.Component {
       let startOffset = otherSelectionState.getStartOffset();
       let endOffset = otherSelectionState.getEndOffset();
 
-      const windowSelectionState = document.getSelection();
+      const windowSelectionState = window.getSelection();
       if (windowSelectionState.rangeCount > 0) {
         const range = windowSelectionState.getRangeAt(0);
         const clientRects = range.getClientRects();
-        console.log(clientRects);
         const rects = clientRects[0];
         let cursorLocation = {
           top: rects.top,
@@ -122,7 +120,7 @@ class Draft extends React.Component {
       editorState = EditorState.forceSelection(editorState, currentSelectionState);
 
       this.setState({
-        editorState,
+        editorState
       })
 
     })
@@ -136,24 +134,6 @@ class Draft extends React.Component {
       delete tempOtherUsers[data.color];
       this.setState({otherUsers: tempOtherUsers,})
     })
-  }
-
-  onChange(editorState) {
-    this.setState({
-      editorState,
-    })
-
-    let stringifiedContentState = this.createStringifiedContentStateFromEditorState(editorState)
-
-    this.socket.emit('changeEditorState', {
-      docId: this.state.id,
-      contentState: stringifiedContentState,
-      selectionState: editorState.getSelection(),
-      color: this.state.color,
-      username: 'bob',
-      // username: this.props.userInfo.user.username,
-    })
-
   }
 
   async componentWillMount() {
@@ -189,6 +169,23 @@ class Draft extends React.Component {
     })
   }
 
+  onChange(editorState) {
+    this.setState({
+      editorState,
+    })
+
+    let stringifiedContentState = this.createStringifiedContentStateFromEditorState(editorState)
+
+    this.socket.emit('changeEditorState', {
+      docId: this.state.id,
+      contentState: stringifiedContentState,
+      selectionState: editorState.getSelection(),
+      color: this.state.color,
+      username: 'bob',
+      // username: this.props.userInfo.user.username,
+    })
+  }
+
   createEditorStateFromStringifiedContentState(stringifiedContentState) {
     let contentState = JSON.parse(stringifiedContentState);
     contentState = convertFromRaw(contentState);
@@ -202,9 +199,6 @@ class Draft extends React.Component {
     let stringifiedContentState = JSON.stringify(contentState)
     return stringifiedContentState
   }
-
-  handleOpen() {this.setState({shareOpen: true})};
-  handleClose() {this.setState({shareOpen: false})};
 
   async onClickLogout() {
     try {
@@ -237,10 +231,6 @@ class Draft extends React.Component {
     this.props.onRefresh(newUserInfo.data.user)
   }
 
-  focus() {
-    this.editor.focus();
-  }
-
   _onTab(e) {
     e.preventDefault();
     const maxDepth = 4;
@@ -248,60 +238,24 @@ class Draft extends React.Component {
       RichUtils.onTab(
         e,
         this.state.editorState,
-        maxDepth));
-  }
-
-  _toggleBlockType(blockType) {
-    this.onChange(
-      RichUtils.toggleBlockType(
-        this.state.editorState,
-        blockType
+        maxDepth
       )
     );
   }
 
-  _toggleInlineStyle(inlineStyle) {
+  _toggleBlockType(e, blockType) {
+    if (e) e.preventDefault();
     this.onChange(
-      RichUtils.toggleInlineStyle(
-        this.state.editorState,
-        inlineStyle
-      )
+      RichUtils.toggleBlockType(this.state.editorState, blockType)
     );
   }
 
-  _toggleColor(toggledColor) {
-    const {editorState} = this.state;
-    const selection = editorState.getSelection();
-    // Let's just allow one color at a time. Turn off all active colors.
-    const nextContentState = Object.keys(colorStyleMap)
-    .reduce((contentState, color) => {
-      return Modifier.removeInlineStyle(contentState, selection, color)
-    }, editorState.getCurrentContent());
-
-    let nextEditorState = EditorState.push(
-      editorState,
-      nextContentState,
-      'change-inline-style'
+  _toggleInlineStyle(e, inlineStyle) {
+    if (e) e.preventDefault();
+    this.onChange(
+      RichUtils.toggleInlineStyle(this.state.editorState, inlineStyle)
     );
-    const currentStyle = editorState.getCurrentInlineStyle();
-    // If the color is being toggled on, apply it.
-    if (!currentStyle.has(toggledColor)) {
-      nextEditorState = RichUtils.toggleInlineStyle(
-        nextEditorState,
-        toggledColor
-      );
-    }
-    this.onChange(nextEditorState);
   }
-
-  // _handleKeyCommand(command, editorState) {
-  //   const newState = RichUtils.handleKeyCommand(editorState, command);
-  //   if (newState) {
-  //     this.onChange(newState);
-  //     return true;
-  //   }
-  //   return false;
-  // }
 
   myBlockStyleFn(contentBlock) {
     const type = contentBlock.getType();
@@ -326,10 +280,8 @@ class Draft extends React.Component {
 
   render() {
     return (
-      <Paper
-        className={'RichEditor-root'}
+      <div
         style={styles.draftBody}
-        zDepth={2}
         >
         <Dialog
           title="Share this ID to share this Doc"
@@ -337,17 +289,17 @@ class Draft extends React.Component {
             <RaisedButton
               label="Close"
               primary={true}
-              onClick={() => this.handleClose()}
+              onClick={() => this.setState({shareOpen: false})}
             />
           }
           modal={false}
           open={this.state.shareOpen}
-          onRequestClose={() => this.handleClose()}
+          onRequestClose={() => this.setState({shareOpen: false})}
         >
           {this.state.id}
         </Dialog>
         <TextField
-          id={'this-makes-a-warning-shut-up'}
+          id={'header'}
           style={styles.draftHeader}
           value={this.state.name}
           onChange={(e) => this.setName(e)}
@@ -356,7 +308,7 @@ class Draft extends React.Component {
         <div style={styles.draftButtonContainer}>
           <RaisedButton
             primary={true}
-            onClick={() => this.handleOpen()}
+            onClick={() => this.setState({shareOpen: true})}
             label={'Share'}
             style={styles.draftButton}
           />
@@ -381,25 +333,17 @@ class Draft extends React.Component {
           </Link>
         </div>
         <br />
-        <div style={styles.controlContainer}>
-          <BlockStyleControls
-            editorState={this.state.editorState}
-            onToggle={(style) => this._toggleBlockType(style)}
-          />
-          <InlineStyleControls
-            editorState={this.state.editorState}
-            onToggle={(style) => this._toggleInlineStyle(style)}
-          />
-          <ColorControls
-            editorState={this.state.editorState}
-            onToggle={(style) => this._toggleColor(style)}
-          />
-        </div>
+        <StyleToolbar
+          editorState={this.state.editorState}
+          onToggleBlockType={(e, style) => this._toggleBlockType(e, style)}
+          onToggleInlineStyle={(e, style) => this._toggleInlineStyle(e, style)}
+        />
         <br />
         <Paper
           style={styles.editor}
           zDepth={1}
-          onClick={() => this.focus()}
+          rounded={false}
+          onClick={() => this.editor.focus()}
           >
           {Object.keys(this.state.otherUsers).map(user =>
             <Cursor
@@ -409,7 +353,7 @@ class Draft extends React.Component {
           )}
           <Editor
             editorState={this.state.editorState}
-            customStyleMap={colorStyleMap}
+            customStyleMap={customStyleMap}
             blockStyleFn={this.myBlockStyleFn}
             blockRenderMap={this.extendedBlockRenderMap}
             onChange={(state) => this.onChange(state)}
@@ -431,7 +375,7 @@ class Draft extends React.Component {
               />
             </Link>
         </div>
-      </Paper>
+      </div>
       );
     }
   };
