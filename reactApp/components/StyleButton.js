@@ -18,7 +18,8 @@ class StyleButton extends React.Component {
     return (
       <RaisedButton
         primary={this.props.active ? true : false}
-        onMouseDown={(e) => this.props.onToggle(this.props.style)}
+        style={styles.toolbarButton}
+        onMouseDown={(e) => this.props.onToggle(e, this.props.style)}
         icon={
           this.props.icon ?
           <FontIcon className="material-icons">{this.props.icon}</FontIcon>
