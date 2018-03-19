@@ -23,6 +23,7 @@ import FlatButton from 'material-ui/FlatButton';
 import Divider from 'material-ui/Divider';
 import TextField from 'material-ui/TextField'
 import Dialog from 'material-ui/Dialog';
+import AppBar from 'material-ui/AppBar';
 
 // css styles
 import styles from '../assets/styles'
@@ -64,6 +65,7 @@ class DocsList extends React.Component {
     try {
       let logout = await axios.get(SERVER_URL + '/logout')
       this.props.onLogout();
+      this.props.history.push('/')
     }
     catch(e) {
       console.log(e);
@@ -127,7 +129,23 @@ class DocsList extends React.Component {
 
   render() {
     return (
-      <div>
+      <div
+        style={{display: 'flex', flexDirection: 'column'}}
+        >
+        <AppBar
+          title={'Welcome to your docs, ' + this.props.userInfo.user.username}
+          onRightIconButtonTouchTap={() => this.onClickLogout()}
+          iconElementRight={
+            this.props.userInfo.loggedIn
+            ?
+            <FlatButton
+              label="Logout"
+            />
+            :
+            null
+          }
+        />
+        <br/>
         <Dialog
           title="Create New Doc"
           actions={[
@@ -179,12 +197,6 @@ class DocsList extends React.Component {
           style={styles.docsListBody}
           >
           <div
-            style={styles.docsListHeader}>
-            Welcome to your docs, {this.props.userInfo.user.username}
-          </div>
-          <br />
-          <br />
-          <div
             style={styles.newDocInputBtnContainer}
             >
             <RaisedButton
@@ -232,17 +244,6 @@ class DocsList extends React.Component {
               )
             }
           </List>
-          <br />
-          <br />
-          <div style={styles.logoutContainer}>
-            <div style={styles.logoutSpacer}></div>
-            <RaisedButton
-              style={styles.logoutBtn}
-              primary={true}
-              onClick={() => this.onClickLogout()}
-              label={'Logout'}
-            />
-          </div>
         </Paper>
       </div>
     );

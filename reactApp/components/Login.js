@@ -4,7 +4,8 @@ import { connect } from 'react-redux';
 import RaisedButton from 'material-ui/RaisedButton';
 import TextField from 'material-ui/TextField'
 import Paper from 'material-ui/Paper';
-import {Link} from 'react-router-dom';
+import AppBar from 'material-ui/AppBar';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 
 // css styles
@@ -42,48 +43,56 @@ class Login extends React.Component {
 
   render() {
     return (
-      <Paper
-        zDepth={2}
-        style={styles.authContainer}
+      <div
+        style={{display: 'flex', flexDirection: 'column'}}
         >
-        <div
-          style={styles.authHeader}>
-          Sign in
-        </div>
-        <div
-          style={styles.authSubHeader}>
-          to continue to Docs
-        </div>
-        <TextField
-          floatingLabelText="Username"
-          fullWidth={true}
-          onChange={(e) => this.setState({username: e.target.value})}
+        <AppBar
+          title='Welcome to Docs'
         />
-        <TextField
-          floatingLabelText="Password"
-          type="password"
-          fullWidth={true}
-          onChange={(e) => this.setState({password: e.target.value})}
-        />
-        <br />
-        <br />
-        <RaisedButton
-          primary={true}
-          onClick={(e) => this.onClickLogin(e)}
-          label={'Login'}
-          fullWidth={true}
-        />
-        <br />
-        <br />
-        <br />
-        <Link to={'/register'}>
-          <RaisedButton
-            primary={true}
-            label={'Go to Registration'}
-            fullWidth={true}
-          />
-        </Link>
-      </Paper>
+        <Paper
+          zDepth={2}
+          style={styles.authContainer}
+          className='loginContainer'
+          >
+            <div
+              style={styles.authHeader}>
+              Sign in
+            </div>
+            <div
+              style={styles.authSubHeader}>
+              to continue to Docs
+            </div>
+            <TextField
+              floatingLabelText="Username"
+              fullWidth={true}
+              onChange={(e) => this.setState({username: e.target.value})}
+            />
+            <TextField
+              floatingLabelText="Password"
+              type="password"
+              fullWidth={true}
+              onChange={(e) => this.setState({password: e.target.value})}
+            />
+            <br />
+            <br />
+            <RaisedButton
+              primary={true}
+              onClick={(e) => this.onClickLogin(e)}
+              label={'Login'}
+              fullWidth={true}
+            />
+            <br />
+            <br />
+            <br />
+            <Link to={'/register'}>
+            <RaisedButton
+              primary={true}
+              label={'Go to Registration'}
+              fullWidth={true}
+            />
+          </Link>
+        </Paper>
+      </div>
     );
   }
 }

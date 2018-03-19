@@ -2,8 +2,9 @@ const styles = {
   editor: {
     fontFamily: '\'Helvetica\', sans-serif',
     cursor: 'text',
-    minHeight: 200,
+    // minHeight: 400,
     padding: 20,
+    alignSelf: 'stretch',
   },
   header: {
     textAlign: 'center',
@@ -14,6 +15,8 @@ const styles = {
   },
   draftHeader: {
     fontSize: 30,
+    marginTop: 20,
+    marginBottom: 20,
   },
   authHeader: {
     fontSize: 30,
@@ -36,6 +39,7 @@ const styles = {
     justifyContent: 'space-between',
   },
   authContainer: {
+    alignSelf: 'center',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'stretch',
@@ -44,6 +48,7 @@ const styles = {
     margin: 50,
   },
   docsListContainer: {
+    paddingTop: 20,
   },
   listItem: {
     textDecoration: 'none',
@@ -75,6 +80,7 @@ const styles = {
     flex: 3,
   },
   docsListBody: {
+    alignSelf: 'center',
     display: 'flex',
     flexDirection: 'column',
     width: 500,
@@ -86,33 +92,30 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'stretch',
-    margin: 50,
+    marginLeft: 150,
+    marginRight: 150,
+    marginTop: 20,
     backgroundColor: '#eeeeee',
   },
   pageContainer: {
     display: 'flex',
     flexDirection: 'column',
-    alignItems: 'center',
+    alignItems: 'stretch',
     backgroundColor: '#eeeeee',
+    height: '100vh',
   },
   draftButtonContainer: {
     display: 'flex',
   },
-  draftButton: {
-    flex: 2,
-  },
-  draftSpacer: {
-    flex: 1,
-  },
-  toolbar: {
-    border: '1px solid black',
-    // display: 'flex',
-  },
   toolbarButton: {
-    margin: 2,
+    margin: 1,
     // flex: 1,
-    width: '5%',
-    // height: '25px',
+    width: 36,
+    // height: '28px',
+    display: 'inline',
+  },
+  buttonIcon: {
+    fontSize: '20px',
   },
 };
 

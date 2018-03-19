@@ -1,6 +1,7 @@
 // packages
 import React from 'react';
 import RaisedButton from 'material-ui/RaisedButton';
+import FlatButton from 'material-ui/FlatButton';
 import FontIcon from 'material-ui/FontIcon';
 
 // css styles
@@ -16,13 +17,19 @@ class StyleButton extends React.Component {
 
   render() {
     return (
-      <RaisedButton
+      <FlatButton
+        backgroundColor={'white'}
         primary={this.props.active ? true : false}
-        style={styles.toolbarButton}
+        style={{margin: 1, minWidth: 36,}}
         onMouseDown={(e) => this.props.onToggle(e, this.props.style)}
         icon={
           this.props.icon ?
-          <FontIcon className="material-icons">{this.props.icon}</FontIcon>
+          <FontIcon
+            className="material-icons"
+            style={styles.buttonIcon}
+            >
+              {this.props.icon}
+            </FontIcon>
           :
           null
         }

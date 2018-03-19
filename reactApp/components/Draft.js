@@ -15,8 +15,11 @@ import {
 import io from 'socket.io-client';
 import Paper from 'material-ui/Paper';
 import RaisedButton from 'material-ui/RaisedButton';
+import FlatButton from 'material-ui/FlatButton';
 import TextField from 'material-ui/TextField'
 import Dialog from 'material-ui/Dialog';
+import AppBar from 'material-ui/AppBar';
+import CircularProgress from 'material-ui/CircularProgress';
 import { Map } from 'immutable';
 
 // css styles
@@ -49,6 +52,7 @@ class Draft extends React.Component {
       shareOpen: false,
       otherUsers: {},
       color: '',
+      isLoading: true,
     }
 
     this.extendedBlockRenderMap = DefaultDraftBlockRenderMap.merge(new Map({
@@ -151,6 +155,7 @@ class Draft extends React.Component {
         id: doc.data.document._id,
         shareOpen: false,
         color: '#'+Math.floor(Math.random()*16777215).toString(16),
+        isLoading: false,
       })
 
       this.socket.emit('documentJoin', {
@@ -204,6 +209,7 @@ class Draft extends React.Component {
     try {
       let logout = await axios.get(SERVER_URL + '/logout')
       this.props.onLogout();
+      this.props.history.push('/');
     }
     catch(e) {
       console.log(e);
@@ -281,100 +287,64 @@ class Draft extends React.Component {
   render() {
     return (
       <div
-        style={styles.draftBody}
-        >
-        <Dialog
-          title="Share this ID to share this Doc"
-          actions={
-            <RaisedButton
-              label="Close"
-              primary={true}
-              onClick={() => this.setState({shareOpen: false})}
-            />
-          }
-          modal={false}
-          open={this.state.shareOpen}
-          onRequestClose={() => this.setState({shareOpen: false})}
-        >
-          {this.state.id}
-        </Dialog>
-        <TextField
-          id={'header'}
-          style={styles.draftHeader}
-          value={this.state.name}
-          onChange={(e) => this.setName(e)}
+        style={{display: 'flex', flexDirection: 'column'}}
+      >
+        <AppBar
+          title={this.state.name}
+          onRightIconButtonTouchTap={() => this.onClickLogout()}
+          iconElementRight={<FlatButton label="Logout"/>}
         />
-        <br />
-        <div style={styles.draftButtonContainer}>
-          <RaisedButton
-            primary={true}
-            onClick={() => this.setState({shareOpen: true})}
-            label={'Share'}
-            style={styles.draftButton}
-          />
-          <div style={styles.draftSpacer}></div>
-          <RaisedButton
-            primary={true}
-            onClick={() => this.onClickSave()}
-            label={'Save'}
-            style={styles.draftButton}
-          />
-          <div style={styles.draftSpacer}></div>
-          <Link
-            to='/'
-            style={styles.draftButton}
-            >
-            <RaisedButton
-              primary={true}
-              fullWidth={true}
-              onClick={() => this.onBackToDocs()}
-              label={'Back to Docs'}
-            />
-          </Link>
-        </div>
-        <br />
-        <StyleToolbar
-          editorState={this.state.editorState}
-          onToggleBlockType={(e, style) => this._toggleBlockType(e, style)}
-          onToggleInlineStyle={(e, style) => this._toggleInlineStyle(e, style)}
-        />
-        <br />
-        <Paper
-          style={styles.editor}
-          zDepth={1}
-          rounded={false}
-          onClick={() => this.editor.focus()}
+        {
+          this.state.isLoading
+          ?
+          <div
+            style={{display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', height: '100vh'}}
           >
-          {Object.keys(this.state.otherUsers).map(user =>
-            <Cursor
-              key={user}
-              user={this.state.otherUsers[user]}
+            <CircularProgress size={80} thickness={5}/>
+          </div>
+          :
+          <div
+            style={styles.draftBody}
+            >
+            <TextField
+              id={'header'}
+              style={styles.draftHeader}
+              value={this.state.name}
+              onChange={(e) => this.setName(e)}
             />
-          )}
-          <Editor
-            editorState={this.state.editorState}
-            customStyleMap={customStyleMap}
-            blockStyleFn={this.myBlockStyleFn}
-            blockRenderMap={this.extendedBlockRenderMap}
-            onChange={(state) => this.onChange(state)}
-            onTab={(e) => this._onTab(e)}
-            // handleKeyCommand={() => this._handleKeyCommand()}
-            ref={(ref) => this.editor = ref}
-          />
-        </Paper>
-        <br />
-        <br />
-        <div style={styles.logoutContainer}>
-          <div style={styles.logoutSpacer}></div>
-            <Link to='/'>
-              <RaisedButton
-                style={styles.logoutBtn}
-                primary={true}
-                onClick={() => this.onClickLogout()}
-                label={'Logout'}
+            <StyleToolbar
+              editorState={this.state.editorState}
+              onToggleBlockType={(e, style) => this._toggleBlockType(e, style)}
+              onToggleInlineStyle={(e, style) => this._toggleInlineStyle(e, style)}
+              id={this.state.id}
+              onClickSave={() => this.onClickSave()}
+              onBackToDocs={() => this.onBackToDocs()}
+            />
+            <Paper
+              style={styles.editor}
+              zDepth={1}
+              rounded={false}
+              onClick={() => this.editor.focus()}
+              >
+              {Object.keys(this.state.otherUsers).map(user =>
+                <Cursor
+                  key={user}
+                  user={this.state.otherUsers[user]}
+                />
+              )}
+              <Editor
+                editorState={this.state.editorState}
+                customStyleMap={customStyleMap}
+                blockStyleFn={this.myBlockStyleFn}
+                blockRenderMap={this.extendedBlockRenderMap}
+                onChange={(state) => this.onChange(state)}
+                onTab={(e) => this._onTab(e)}
+                // handleKeyCommand={() => this._handleKeyCommand()}
+                ref={(ref) => this.editor = ref}
               />
-            </Link>
-        </div>
+            </Paper>
+          </div>
+        }
       </div>
       );
     }

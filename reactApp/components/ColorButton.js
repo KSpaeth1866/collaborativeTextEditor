@@ -1,7 +1,7 @@
 // packages
 import React from 'react';
 import { GithubPicker } from 'react-color';
-import RaisedButton from 'material-ui/RaisedButton';
+import FlatButton from 'material-ui/FlatButton';
 import Popover from 'material-ui/Popover';
 import FontIcon from 'material-ui/FontIcon';
 
@@ -34,25 +34,31 @@ class ColorButton extends React.Component {
 
   render() {
     return (
-      <div style={styles.controls}>
-        <RaisedButton
-          style={styles.toolbarButton}
-          icon={<FontIcon className="material-icons">format_paint</FontIcon>}
-          onMouseDown={(e) => this.openColorPicker(e)}
-          >
-          <Popover
-            open={this.state.colorPickerOpen}
-            anchorEl={this.state.colorPickerButton}
-            anchorOrigin={{horizontal: 'left', vertical: 'bottom'}}
-            targetOrigin={{horizontal: 'left', vertical: 'top'}}
-            onRequestClose={() => this.closeColorPicker()}
+      <FlatButton
+        style={{margin: 1, minWidth: 36,}}
+        icon={
+          <FontIcon
+            className="material-icons"
+            style={styles.buttonIcon}
             >
-            <GithubPicker
-              onChangeComplete={(color) => this.props.onToggle(null, color.hex)}
-            />
-          </Popover>
-        </RaisedButton>
-      </div>
+              format_paint
+            </FontIcon>
+          }
+        onMouseDown={(e) => this.openColorPicker(e)}
+        backgroundColor={'white'}
+        >
+        <Popover
+          open={this.state.colorPickerOpen}
+          anchorEl={this.state.colorPickerButton}
+          anchorOrigin={{horizontal: 'left', vertical: 'bottom'}}
+          targetOrigin={{horizontal: 'left', vertical: 'top'}}
+          onRequestClose={() => this.closeColorPicker()}
+          >
+          <GithubPicker
+            onChangeComplete={(color) => this.props.onToggle(null, color.hex)}
+          />
+        </Popover>
+      </FlatButton>
     );
   }
 };

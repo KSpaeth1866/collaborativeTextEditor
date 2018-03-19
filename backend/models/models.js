@@ -31,6 +31,9 @@ var docsSchema = mongoose.Schema({
   ts: {
     type: Date
   },
+  lastEdited: {
+    type: Date
+  },
   contentState: {
     type: String
   }

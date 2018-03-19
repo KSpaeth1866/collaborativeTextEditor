@@ -7,7 +7,8 @@ import {
   Switch,
   Link,
 } from 'react-router-dom';
-import AppBar from 'material-ui/AppBar';
+import FlatButton from 'material-ui/FlatButton';
+import axios from 'axios';
 
 // css styles
 import styles from '../assets/styles'
@@ -18,20 +19,17 @@ import DocsList from './DocsList';
 import Login from './Login';
 import Register from './Register';
 
-// dispatch actions
-import {
-  login,
-  logout,
-} from '../actions/index';
-
 // class component
 class Page extends React.Component {
+  constructor(props) {
+    super(props)
+  }
+
   render() {
     return (
       <div
         style={styles.pageContainer}
         >
-        <AppBar title="Docs" />
         <HashRouter>
           <Switch>
             <Route exact path='/' component={
